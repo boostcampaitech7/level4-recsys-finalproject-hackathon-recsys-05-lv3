@@ -22,11 +22,11 @@ body:
       label: 선택지
       description: 투표에 사용할 옵션들을 작성해주세요. 각 옵션은 새로운 줄에 추가합니다.
       placeholder: |
-        예시:
+        "예시:
         - 👍 현재 디자인 유지
         - 👎 새로운 디자인 A
         - 🎉 새로운 디자인 B
-        - 🚀 새로운 디자인 C
+        - 🚀 새로운 디자인 C"
       validations:
         required: true
   - type: input
