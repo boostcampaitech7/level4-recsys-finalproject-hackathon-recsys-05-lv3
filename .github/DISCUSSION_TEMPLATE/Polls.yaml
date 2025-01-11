@@ -1,0 +1,45 @@
+name: "투표"
+about: "의견 수렴을 위해 투표를 진행합니다."
+title: "[투표] "
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 투표 템플릿
+        아래의 선택지 중 하나를 선택해주세요. 댓글로 의견을 남길 수도 있습니다.
+  - type: input
+    id: topic
+    attributes:
+      label: 투표 주제
+      description: 투표하려는 주제를 간단히 작성해주세요.
+      placeholder: "투표 주제를 입력하세요."
+      validations:
+        required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: 선택지
+      description: 투표에 사용할 옵션들을 작성해주세요. 각 옵션은 새로운 줄에 추가합니다.
+      placeholder: |
+        예시:
+        - 👍 현재 디자인 유지
+        - 👎 새로운 디자인 A
+        - 🎉 새로운 디자인 B
+        - 🚀 새로운 디자인 C
+      validations:
+        required: true
+  - type: input
+    id: deadline
+    attributes:
+      label: 마감일
+      description: 투표 종료 날짜를 입력해주세요. (예: 2025-01-15)
+      placeholder: "마감일을 입력하세요."
+      validations:
+        required: true
+  - type: markdown
+    attributes:
+      value: |
+        ### 참고 사항
+        - 투표는 이모지 리액션으로 진행됩니다.
+        - 마감일 이후 투표 결과를 확인하세요.
