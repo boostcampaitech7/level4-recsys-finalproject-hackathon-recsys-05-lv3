@@ -1,0 +1,31 @@
+title: "[TODO] [2025-01-00] 할 일 "
+
+body:
+  - type: textarea
+    id: status
+    attributes:
+      label: 할 일
+      value: |
+        공지원: 
+
+
+        김주은: 
+
+
+        류지훈: 
+
+
+        박세연: 
+
+
+        박재현: 
+
+
+        백상민: 
+
+
+        완료된 작업:
+
+
+        진행 중인 작업:
+      render: bash
