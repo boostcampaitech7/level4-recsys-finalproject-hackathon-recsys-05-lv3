@@ -1,5 +1,5 @@
-name: 투표
-about: 의견 수렴을 위해 투표를 진행합니다.
+name: "투표"
+description: "의견 수렴을 위해 투표를 진행합니다."
 
 body:
   - type: markdown
