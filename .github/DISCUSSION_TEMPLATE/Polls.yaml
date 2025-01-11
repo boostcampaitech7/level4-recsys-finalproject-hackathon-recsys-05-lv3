@@ -1,4 +1,5 @@
 title: "투표"
+labels: "의견 수렴을 위해 투표를 진행합니다."
 
 body:
   - type: markdown
