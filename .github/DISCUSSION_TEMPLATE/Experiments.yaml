@@ -6,88 +6,88 @@ body:
     attributes:
       value: |
         ## 🧪 실험 템플릿
-        아래 항목들을 채워주세요. 실험 설계와 진행 상황을 체계적으로 기록하는 데 도움을 줍니다.
+        아래 항목들을 작성해 주세요. 실험의 목표, 설계, 진행 계획 등을 체계적으로 기록할 수 있습니다.
 
   - type: input
-    id: title
+    id: experiment_name
     attributes:
-      label: 실험 제목
-      description: 실험의 간단한 제목을 입력하세요.
-      placeholder: "[Experiment] 모델 A vs 모델 B 비교 실험"
-      required: true
+      label: 실험 이름
+      description: 실험의 제목 또는 이름을 입력하세요.
+      placeholder: "ex) 모델 A vs 모델 B 비교 실험"
+
+  - type: input
+    id: author
+    attributes:
+      label: 작성자
+      description: 실험 담당자 이름을 입력하세요.
+      placeholder: "작성자 이름을 입력하세요."
 
   - type: textarea
     id: background
     attributes:
-      label: 배경 (Background)
-      description: 실험의 동기와 배경을 설명하세요.
+      label: 배경 및 목적
+      description: 실험의 동기와 목표를 간단히 설명하세요.
       placeholder: |
-        기존 모델의 성능 한계를 확인하기 위해 새로운 구조를 테스트합니다. 
-        주요 목표는 RMSE를 5% 줄이는 것입니다.
-      required: true
+        ex) 기존 모델의 성능을 개선하기 위해 새로운 모델을 도입하여 성능을 비교하고자 합니다.
 
   - type: textarea
     id: hypothesis
     attributes:
-      label: 가설 (Hypothesis)
-      description: 이 실험의 가설을 작성하세요.
-      placeholder: "모델 B는 모델 A보다 더 높은 예측 정확도를 가진다."
-      required: true
+      label: 가설
+      description: 실험에서 검증하고자 하는 가설을 작성하세요.
+      placeholder: "ex) 새로운 모델이 기존 모델보다 RMSE가 5% 낮아질 것이다."
 
   - type: textarea
-    id: objective
+    id: experiment_design
     attributes:
-      label: 실험 목표 (Objective)
-      description: 실험으로 확인하고자 하는 내용을 구체적으로 명시하세요.
-      placeholder: "두 모델의 성능을 비교하여 최적의 모델을 확인."
-      required: true
-
-  - type: textarea
-    id: design
-    attributes:
-      label: 실험 설계 (Experiment Design)
-      description: 데이터셋, 모델, 평가 지표 등을 포함한 실험 방법론을 설명하세요.
+      label: 실험 설계
+      description: 실험 방법론, 데이터셋, 모델, 평가 지표 등을 구체적으로 작성하세요.
       placeholder: |
-        - 데이터셋: MovieLens 1M
-        - 모델:
-          - 모델 A: Baseline
-          - 모델 B: 새로운 구조
-        - 평가 지표: RMSE, Precision@10
-      required: true
+        - **데이터셋**: MovieLens 1M
+        - **모델**:
+          - 모델 A: Baseline 모델
+          - 모델 B: 새로운 모델
+        - **평가 지표**: RMSE, Precision@10
 
   - type: textarea
-    id: timeline
+    id: experiment_schedule
     attributes:
-      label: 진행 계획 (Timeline)
-      description: 실험 일정을 작성하세요.
+      label: 실험 일정
+      description: 실험 진행 일정을 작성하세요.
       placeholder: |
-        1주차: 데이터 전처리 및 모델 구성
-        2주차: 모델 학습 및 평가
-        3주차: 결과 분석 및 최종 보고
-      required: true
+        ex)
+        - 1주차: 데이터 전처리 및 모델 구성
+        - 2주차: 모델 학습 및 평가
+        - 3주차: 결과 분석 및 보고서 작성
 
   - type: textarea
-    id: outcome
+    id: results
     attributes:
-      label: 예상 결과 및 기준 (Expected Outcome and Criteria)
-      description: 성공 기준과 예상되는 결과를 명시하세요.
-      placeholder: |
-        모델 B의 RMSE가 모델 A보다 5% 낮아야 성공으로 간주합니다.
-      required: true
+      label: 실험 결과
+      description: 실험 결과를 요약하여 작성하세요. (진행 중일 경우 "진행 중"으로 표시)
+      placeholder: "ex) 모델 B가 모델 A보다 RMSE가 3% 낮아졌습니다."
 
   - type: textarea
-    id: references
+    id: conclusion
     attributes:
-      label: 참고 자료 (References)
-      description: 관련 연구 논문, 문서, 또는 코드 링크를 추가하세요.
+      label: 결론 및 인사이트
+      description: 실험 결과로부터 얻은 결론과 인사이트를 작성하세요.
       placeholder: |
-        - [논문 링크](https://example.com)
-        - [코드 링크](https://github.com/example/repo)
-      required: false
+        ex) 새로운 모델은 특정 조건에서 더 나은 성능을 보였으나, 계산 비용이 증가하는 단점이 있었습니다.
+
+  - type: textarea
+    id: todo
+    attributes:
+      label: 다음 단계
+      description: 실험 이후 수행할 추가 작업 또는 계획을 작성하세요.
+      placeholder: |
+        ex)
+        - 하이퍼파라미터 튜닝 진행
+        - 추가 데이터셋 실험 수행
 
   - type: markdown
     attributes:
       value: |
+        ---
         ### 참고 사항
-        - 실험 결과와 진행 상황을 주기적으로 업데이트해주세요.
-        - 주요 변경 사항은 팀과 공유해야 합니다.
+        - 실험 진행 중 주요 변경 사항이 발생하면 댓글로 업데이트를 남겨주세요.
