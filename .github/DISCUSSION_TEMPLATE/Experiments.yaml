@@ -1,89 +1,60 @@
 title: "실험 템플릿"
-labels: "experiment, ongoing"
+labels: 
 
 body:
   - type: markdown
     attributes:
       value: |
         ## 🧪 실험 템플릿
-        아래 항목들을 작성해 주세요. 실험의 목표, 설계, 진행 계획 등을 체계적으로 기록할 수 있습니다.
 
   - type: input
     id: experiment_name
     attributes:
       label: 실험 이름
-      description: 실험의 제목 또는 이름을 입력하세요.
-      placeholder: "ex) 모델 A vs 모델 B 비교 실험"
 
   - type: input
     id: author
     attributes:
       label: 작성자
-      description: 실험 담당자 이름을 입력하세요.
-      placeholder: "작성자 이름을 입력하세요."
 
   - type: textarea
     id: background
     attributes:
       label: 배경 및 목적
-      description: 실험의 동기와 목표를 간단히 설명하세요.
-      placeholder: |
-        ex) 기존 모델의 성능을 개선하기 위해 새로운 모델을 도입하여 성능을 비교하고자 합니다.
 
   - type: textarea
     id: hypothesis
     attributes:
       label: 가설
-      description: 실험에서 검증하고자 하는 가설을 작성하세요.
-      placeholder: "ex) 새로운 모델이 기존 모델보다 RMSE가 5% 낮아질 것이다."
 
   - type: textarea
     id: experiment_design
     attributes:
       label: 실험 설계
-      description: 실험 방법론, 데이터셋, 모델, 평가 지표 등을 구체적으로 작성하세요.
       placeholder: |
-        - **데이터셋**: MovieLens 1M
-        - **모델**:
-          - 모델 A: Baseline 모델
-          - 모델 B: 새로운 모델
-        - **평가 지표**: RMSE, Precision@10
+        - 데이터셋: 
+        - 모델:
+        - 평가 지표: 
 
   - type: textarea
     id: experiment_schedule
     attributes:
       label: 실험 일정
-      description: 실험 진행 일정을 작성하세요.
-      placeholder: |
-        ex)
-        - 1주차: 데이터 전처리 및 모델 구성
-        - 2주차: 모델 학습 및 평가
-        - 3주차: 결과 분석 및 보고서 작성
 
   - type: textarea
     id: results
     attributes:
       label: 실험 결과
-      description: 실험 결과를 요약하여 작성하세요. (진행 중일 경우 "진행 중"으로 표시)
-      placeholder: "ex) 모델 B가 모델 A보다 RMSE가 3% 낮아졌습니다."
 
   - type: textarea
     id: conclusion
     attributes:
       label: 결론 및 인사이트
-      description: 실험 결과로부터 얻은 결론과 인사이트를 작성하세요.
-      placeholder: |
-        ex) 새로운 모델은 특정 조건에서 더 나은 성능을 보였으나, 계산 비용이 증가하는 단점이 있었습니다.
 
   - type: textarea
     id: todo
     attributes:
       label: 다음 단계
-      description: 실험 이후 수행할 추가 작업 또는 계획을 작성하세요.
-      placeholder: |
-        ex)
-        - 하이퍼파라미터 튜닝 진행
-        - 추가 데이터셋 실험 수행
 
   - type: markdown
     attributes:
