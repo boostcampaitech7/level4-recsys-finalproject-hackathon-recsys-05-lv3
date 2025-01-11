@@ -13,7 +13,7 @@ body:
     attributes:
       label: 투표 주제
       description: 투표하려는 주제를 간단히 작성해주세요.
-      placeholder: "투표 주제를 입력하세요."
+      placeholder: 투표 주제를 입력하세요.
       validations:
         required: true
   - type: textarea
@@ -34,7 +34,7 @@ body:
     attributes:
       label: 마감일
       description: 투표 종료 날짜를 입력해주세요. (예: 2025-01-15)
-      placeholder: "마감일을 입력하세요."
+      placeholder: 마감일을 입력하세요.
       validations:
         required: true
   - type: markdown
