@@ -1,0 +1,3 @@
+data_dir : ../../data
+preprocess_dir : ../../data/preprocessed
+
