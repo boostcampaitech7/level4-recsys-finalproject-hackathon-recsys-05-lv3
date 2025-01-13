@@ -20,13 +20,11 @@ body:
         백상민: 
         완료된 작업:
         진행 중인 작업:
-      render: bash
   - type: textarea
     id: agenda
     attributes:
       label: Agenda
       description: 회의에서 논의 사항을 다룹니다.      
-      render: bash
   - type: textarea
     id: problem
     attributes:
@@ -34,9 +32,7 @@ body:
       value: |
         문제점:
         해결 방법:
-      render: bash
   - type: textarea
     id: add
     attributes:
       label: 추가로 다루어 보아야 할 사항
-      render: bash
