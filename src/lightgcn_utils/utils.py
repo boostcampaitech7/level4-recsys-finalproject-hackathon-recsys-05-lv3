@@ -11,11 +11,12 @@ import os
 
 try:
     from cppimport import imp_from_filepath
-    from os.path import join, dirname
-    path = "sampling.cpp"
-    sampling = imp_from_filepath(path)
+    import sys
+    sys.path.append('src/data')
+    sampling = imp_from_filepath('src/data/sampling.cpp')
     sampling.seed(world.seed)
     sample_ext = True
+    world.cprint("Cpp extension loaded")
 except:
     world.cprint("Cpp extension not loaded")
     sample_ext = False

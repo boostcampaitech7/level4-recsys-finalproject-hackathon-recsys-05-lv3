@@ -32,7 +32,7 @@ def BPR_train_original(dataset, recommend_model, loss_class, epoch, neg_k=1, w=N
                                                    posItems,
                                                    negItems,
                                                    batch_size=world.config['bpr_batch_size'])):
-        if batch_i % 10==0:
+        if batch_i % 50==0:
             print(f'{batch_i} / {total_batch}')
         # 역전파
         cri = bpr.stageOne(batch_users, batch_pos, batch_neg)

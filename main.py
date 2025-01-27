@@ -1,4 +1,5 @@
 from src import preprocessing, world, utils, Procedure, register
+from src.data import dataloader
 import torch
 from tensorboardX import SummaryWriter
 import time
@@ -10,7 +11,11 @@ print(">>SEED:", world.seed)
 
 preprocessing.data2txt() # 해당 경로에 txt가 없는 경우 최초 한번 실행
 
-Recmodel = register.MODELS[world.model_name](world.config, register.dataset)
+if world.dataset in ['MovieLens1M', 'MovieLens32M']:
+    dataset = dataloader.Loader(path="./data/"+world.dataset+"/final")
+
+
+Recmodel = register.MODELS[world.model_name](world.config, dataset)
 Recmodel = Recmodel.to(world.device)
 bpr = utils.BPRLoss(Recmodel, world.config)
 
@@ -39,13 +44,13 @@ try:
         start = time.time()
         if epoch %10 == 0:
             world.cprint("[TEST]")
-            Procedure.Test(register.dataset, Recmodel, epoch, w, world.config['multicore'])
-        output_information = Procedure.BPR_train_original(register.dataset, Recmodel, bpr, epoch, neg_k=Neg_k,w=w)
+            Procedure.Test(dataset, Recmodel, epoch, w, world.config['multicore'])
+        output_information = Procedure.BPR_train_original(dataset, Recmodel, bpr, epoch, neg_k=Neg_k,w=w)
         print(f'EPOCH[{epoch+1}/{world.TRAIN_epochs}] {output_information}')
         torch.save(Recmodel.state_dict(), weight_file)
 
     world.cprint("[TEST]")
-    Procedure.Test(register.dataset, Recmodel, epoch, w, world.config['multicore'])
+    Procedure.Test(dataset, Recmodel, epoch, w, world.config['multicore'])
 finally:
     if world.tensorboard:
         w.close()

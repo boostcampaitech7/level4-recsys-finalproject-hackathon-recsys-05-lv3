@@ -39,11 +39,11 @@ def data2txt():
                 train_data.append((user_id, train_part))
                 test_data.append((user_id, test_part))
 
-        with open('data/MovieLens1M/Final/train.txt','w') as f:
+        with open('data/MovieLens1M/final/train.txt','w') as f:
             for (u, items) in train_data:
                 line = str(u) + ' ' + ' '.join(map(str, items))
                 f.write(line + '\n')
-        with open('data/MovieLens1M/Final/test.txt', 'w') as f:
+        with open('data/MovieLens1M/final/test.txt', 'w') as f:
             for (u, items) in test_data:
                 line = str(u) + ' ' + ' '.join(map(str, items))
                 f.write(line + '\n')

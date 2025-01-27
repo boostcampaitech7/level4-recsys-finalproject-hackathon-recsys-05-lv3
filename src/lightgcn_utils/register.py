@@ -3,8 +3,6 @@ from src.data import dataloader
 from src.models import lightgcn
 from pprint import pprint
 
-if world.dataset in ['MovieLens1M', 'MovieLens32M']:
-    dataset = dataloader.Loader(path="./data/"+world.dataset+"/final")
 
 print('==================config=======================')
 pprint(world.config)
