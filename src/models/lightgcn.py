@@ -1,4 +1,3 @@
-from src.lightgcn_utils import world
 import torch
 from src.data.dataloader import BasicDataset
 from torch import nn
@@ -10,72 +9,14 @@ class BasicModel(nn.Module):
     
     def getUsersRating(self, users):
         raise NotImplementedError
-    
-class PairWiseModel(BasicModel):
-    def __init__(self):
-        super(PairWiseModel, self).__init__()
-    def bpr_loss(self, users, pos, neg):
-        """
-        Parameters:
-            users: users list 
-            pos: positive items for corresponding users
-            neg: negative items for corresponding users
-        Return:
-            (log-loss, l2-loss)
-        """
-        raise NotImplementedError
-    
-class PureMF(BasicModel):
-    def __init__(self, 
-                 config:dict, 
-                 dataset:BasicDataset):
-        super(PureMF, self).__init__()
-        self.num_users  = dataset.n_users
-        self.num_items  = dataset.m_items
-        self.latent_dim = config['latent_dim_rec']
-        self.f = nn.Sigmoid()
-        self.__init_weight()
-        
-    def __init_weight(self):
-        self.embedding_user = torch.nn.Embedding(
-            num_embeddings=self.num_users, embedding_dim=self.latent_dim)
-        self.embedding_item = torch.nn.Embedding(
-            num_embeddings=self.num_items, embedding_dim=self.latent_dim)
-        print("using Normal distribution N(0,1) initialization for PureMF")
-        
-    def getUsersRating(self, users):
-        users = users.long()
-        users_emb = self.embedding_user(users)
-        items_emb = self.embedding_item.weight
-        scores = torch.matmul(users_emb, items_emb.t())
-        return self.f(scores)
-    
-    def bpr_loss(self, users, pos, neg):
-        users_emb = self.embedding_user(users.long())
-        pos_emb   = self.embedding_item(pos.long())
-        neg_emb   = self.embedding_item(neg.long())
-        pos_scores= torch.sum(users_emb*pos_emb, dim=1)
-        neg_scores= torch.sum(users_emb*neg_emb, dim=1)
-        loss = torch.mean(nn.functional.softplus(neg_scores - pos_scores))
-        reg_loss = (1/2)*(users_emb.norm(2).pow(2) + 
-                          pos_emb.norm(2).pow(2) + 
-                          neg_emb.norm(2).pow(2))/float(len(users))
-        return loss, reg_loss
-        
-    def forward(self, users, items):
-        users = users.long()
-        items = items.long()
-        users_emb = self.embedding_user(users)
-        items_emb = self.embedding_item(items)
-        scores = torch.sum(users_emb*items_emb, dim=1)
-        return self.f(scores)
 
 class LightGCN(BasicModel):
     def __init__(self, 
                  config:dict, 
                  dataset:BasicDataset):
         super(LightGCN, self).__init__()
-        self.config = config
+
+        self.config = config.model_args
         self.dataset : BasicDataset = dataset
         self.__init_weight()
 
@@ -83,7 +24,7 @@ class LightGCN(BasicModel):
         self.num_users  = self.dataset.n_users
         self.num_items  = self.dataset.m_items
         self.latent_dim = self.config['latent_dim_rec']
-        self.n_layers = self.config['lightGCN_n_layers']
+        self.n_layers = self.config['n_layers']
         self.keep_prob = self.config['keep_prob']
         self.A_split = self.config['A_split']
         self.embedding_user = torch.nn.Embedding(
@@ -97,14 +38,14 @@ class LightGCN(BasicModel):
 # random normal init seems to be a better choice when lightGCN actually don't use any non-linear activation function
             nn.init.normal_(self.embedding_user.weight, std=0.1)
             nn.init.normal_(self.embedding_item.weight, std=0.1)
-            world.cprint('use NORMAL distribution initilizer')
+            print('use NORMAL distribution initilizer')
         else:
             self.embedding_user.weight.data.copy_(torch.from_numpy(self.config['user_emb']))
             self.embedding_item.weight.data.copy_(torch.from_numpy(self.config['item_emb']))
             print('use pretarined data')
         self.f = nn.Sigmoid()
         self.Graph = self.dataset.getSparseGraph()
-        print(f"lgn is already to go(dropout:{self.config['dropout']})")
+        print(f"LightGCN is already to go (dropout:{self.config['dropout']})")
 
     def __dropout_x(self, x, keep_prob):
         size = x.size()
