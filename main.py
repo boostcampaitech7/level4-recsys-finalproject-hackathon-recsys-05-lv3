@@ -1,4 +1,4 @@
-from src import preprocessing, world, utils, Procedure, register
+from src import preprocessing, world, utils, Procedure, register, wandblogger
 from src.data import dataloader
 import torch
 from tensorboardX import SummaryWriter
@@ -38,6 +38,7 @@ else:
     w = None
     world.cprint("not enable tensorflowboard")
 
+wandblogger = wandblogger.WandbLogger(world.config)
 
 try:
     for epoch in range(world.TRAIN_epochs):
@@ -45,12 +46,14 @@ try:
         if epoch %10 == 0:
             world.cprint("[TEST]")
             Procedure.Test(dataset, Recmodel, epoch, w, world.config['multicore'])
-        output_information = Procedure.BPR_train_original(dataset, Recmodel, bpr, epoch, neg_k=Neg_k,w=w)
+        output_information, aver_loss = Procedure.BPR_train_original(dataset, Recmodel, bpr, epoch, neg_k=Neg_k,w=w)
+        wandblogger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
         print(f'EPOCH[{epoch+1}/{world.TRAIN_epochs}] {output_information}')
         torch.save(Recmodel.state_dict(), weight_file)
 
     world.cprint("[TEST]")
-    Procedure.Test(dataset, Recmodel, epoch, w, world.config['multicore'])
+    results = Procedure.Test(dataset, Recmodel, epoch, w, world.config['multicore'])
+    wandblogger.log_metrics({**results}, head="test")
 finally:
     if world.tensorboard:
         w.close()

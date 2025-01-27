@@ -38,6 +38,10 @@ config['pretrain'] = args.pretrain
 config['A_split'] = True
 config['bigdata'] = True
 
+config['log_wandb'] = True
+config['wandb_project'] = "wandbtest"
+config['wandb_experiment_name'] = "asd"
+
 GPU = torch.cuda.is_available()
 device = torch.device('cuda' if GPU else "cpu")
 CORES = multiprocessing.cpu_count() // 2
@@ -49,7 +53,6 @@ if dataset not in all_dataset:
     raise NotImplementedError(f"Haven't supported {dataset} yet!, try {all_dataset}")
 if model_name not in all_models:
     raise NotImplementedError(f"Haven't supported {model_name} yet!, try {all_models}")
-
 
 
 
