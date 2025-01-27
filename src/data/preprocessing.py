@@ -11,8 +11,12 @@ def data2txt():
         print("train.txt 파일이 존재합니다.")
     else:
         print("train.txt 파일이 존재하지 않습니다.")
-        rating_df = pd.read_csv('data/MovieLens1M/raw/ratings.dat', sep='::', engine='python',
-                                 names=['userId','movieId','rating', 'timestamp'], header=None)
+        
+        try : 
+            rating_df = pd.read_csv('data/MovieLens1M/raw/ratings.dat', sep='::', engine='python',
+                                    names=['userId','movieId','rating', 'timestamp'], header=None)
+        except FileNotFoundError :
+            print('파일이 없습니다.')
 
         # threshold
         threshold = 4.0
@@ -39,11 +43,16 @@ def data2txt():
                 train_data.append((user_id, train_part))
                 test_data.append((user_id, test_part))
 
-        with open('data/MovieLens1M/final/train.txt','w') as f:
+        final_path = 'data/MovieLens1M/final'
+
+        if not os.path.exists(final_path):
+            os.makedirs(final_path)
+        
+        with open(final_path+'/train.txt','w') as f:
             for (u, items) in train_data:
                 line = str(u) + ' ' + ' '.join(map(str, items))
                 f.write(line + '\n')
-        with open('data/MovieLens1M/final/test.txt', 'w') as f:
+        with open(final_path+'/test.txt', 'w') as f:
             for (u, items) in test_data:
                 line = str(u) + ' ' + ' '.join(map(str, items))
                 f.write(line + '\n')
