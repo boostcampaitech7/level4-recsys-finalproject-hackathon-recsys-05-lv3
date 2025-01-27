@@ -28,8 +28,7 @@ __pycache__/
 
 __pycache__
 
-
-data
+MovieLens1M
 
 wandb
 *sampling.cpython*
