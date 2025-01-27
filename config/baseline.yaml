@@ -38,10 +38,9 @@ dataset :
 dataloader:
     n_fold : 100
     split : True
-    batch_size: 1024    # 배치 사이즈
-    shuffle: True       # 학습 데이터 셔플 여부
-    num_workers: 0      # 멀티프로세서 수. 0: 메인프로세서만 사용
-    bpr_batch_size : 256
+    bpr_batch_size: 1024    # 배치 사이즈
+    # shuffle: True       # 학습 데이터 셔플 여부
+    # num_workers: 0      # 멀티프로세서 수. 0: 메인프로세서만 사용
     test_batch_size : 512
 
 
@@ -60,9 +59,9 @@ topks : [20]    # 모델에서 Precedure 부분에 [20]이라고 설정함  test
 
 train:
     epochs: 20                          # 학습 에폭 수
-    log_dir: saved/log                  # 로그 저장 경로
-    ckpt_dir: saved/checkpoint    # 모델 저장 경로
-    submit_dir: saved/submit            # 예측 저장 경로
-    save_best_model: True               # True: val_loss가 최소인 모델 저장 / False: 모든 모델 저장
+    # log_dir: saved/log                  # 로그 저장 경로
+    # ckpt_dir: saved/checkpoint    # 모델 저장 경로
+    # submit_dir: saved/submit            # 예측 저장 경로
+    # save_best_model: True               # True: val_loss가 최소인 모델 저장 / False: 모든 모델 저장
     resume: False                               # 이어서 학습할 경우 True
     resume_path: saved/checkpoint/              # 이어서 학습할 모델 경로
