@@ -1,4 +1,4 @@
-from src import preprocessing, world, utils, Procedure, register
+from src import preprocessing, world, utils, Procedure, register, wandblogger
 from src.data import dataloader
 import torch
 from tensorboardX import SummaryWriter
