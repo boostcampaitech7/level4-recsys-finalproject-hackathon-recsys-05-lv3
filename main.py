@@ -47,7 +47,7 @@ try:
             world.cprint("[TEST]")
             Procedure.Test(dataset, Recmodel, epoch, w, world.config['multicore'])
         output_information, aver_loss = Procedure.BPR_train_original(dataset, Recmodel, bpr, epoch, neg_k=Neg_k,w=w)
-        wandblogger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch)
+        wandblogger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
         print(f'EPOCH[{epoch+1}/{world.TRAIN_epochs}] {output_information}')
         torch.save(Recmodel.state_dict(), weight_file)
 
