@@ -21,5 +21,7 @@ __all__ = [
     'Procedure',
     'register',
     'utils',
-    'world'
+    'world',
+
+    'wandblogger'
 ]
