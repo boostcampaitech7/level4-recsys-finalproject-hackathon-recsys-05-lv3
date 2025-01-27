@@ -1,0 +1,68 @@
+# config.yaml
+memo: 
+    저는 김주은입니다.
+# 아래의 일곱 항목들은 argparser로 받은 인자를 우선적으로 사용합니다.
+#   $ python main.py --config config.yaml --seed 2024
+#   과 같이 실행할 경우 seed는 0이 아닌 2024로 설정됩니다.
+
+
+seed: 0         # 시드 고정
+device: cuda    # 가능한 값 : cpu, cuda, mps
+model: LightGCN       # 모델 선택
+model_experiment_name : '은'  # 로컬에 저장될 이름
+
+wandb: True                            # wandb 사용 여부
+wandb_project: 'movierec'               # wandb 프로젝트 이름
+wandb_experiment_name: '주'            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
+
+tensorboard: True
+
+model_args:
+    LightGCN:
+        latent_dim_rec: 64               # the embedding size of lightGCN
+        n_layers: 3                 # the layer num of lightGCN
+        dropout: 0               # using the dropout or not (0 or 1)
+        keep_prob : 0.6
+        load: 0                  # whether to load a model (0 or 1)
+        epochs: 50               # number of training epochs
+        multicore: 0             # whether to use multiprocessing in testing (0 or 1)
+        pretrain: 0              # whether to use pretrained weights (0 or 1)
+        A_split : True
+        bigdata : True
+
+dataset :
+  data_dir : data/
+  data : MovieLens1M
+  preprocess_dir : /preprocessed
+
+dataloader:
+    n_fold : 100
+    split : True
+    batch_size: 1024    # 배치 사이즈
+    shuffle: True       # 학습 데이터 셔플 여부
+    num_workers: 0      # 멀티프로세서 수. 0: 메인프로세서만 사용
+    bpr_batch_size : 256
+    test_batch_size : 512
+
+
+loss: BPRLoss          # 직접 정의한 loss 클래스 또는 torch.nn.Module 클래스 (https://pytorch.org/docs/stable/nn.html#loss-functions)
+
+optimizer:
+    type: Adam      # 사용가능한 optimizer: torch.optim.Optimizer 클래스 (https://pytorch.org/docs/stable/optim.html#algorithms)
+    args:           # 사용하고자 하는 클래스의 파라미터를 참고하여 추가해주시면 되며, 관계가 없는 파라미터는 무시됩니다.
+        lr: 0.001             # 예) 모든 옵티마이저에서 사용되는 학습률
+        weight_decay: 0.0001  # 예) Adam 등 / L2 정규화 가중치
+        amsgrad: False      # 예) Adam 등 / amsgrad 사용 여부
+
+metrics: [ precision, recall, ndcg ]  # 평가 지표. 직접 정의한 loss 클래스 또는 torch.nn.Module 클래스 (https://pytorch.org/docs/stable/nn.html#loss-functions)
+
+topks : [20]    # 모델에서 Precedure 부분에 [20]이라고 설정함  test_one_batch 
+
+train:
+    epochs: 20                          # 학습 에폭 수
+    log_dir: saved/log                  # 로그 저장 경로
+    ckpt_dir: saved/checkpoint    # 모델 저장 경로
+    submit_dir: saved/submit            # 예측 저장 경로
+    save_best_model: True               # True: val_loss가 최소인 모델 저장 / False: 모든 모델 저장
+    resume: False                               # 이어서 학습할 경우 True
+    resume_path: saved/checkpoint/              # 이어서 학습할 모델 경로
