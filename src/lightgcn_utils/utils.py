@@ -1,11 +1,8 @@
-from src.lightgcn_utils import world
 import torch
-from torch import optim
+import torch.optim as optim
 import numpy as np
 from src.data.dataloader import BasicDataset
 from time import time
-from src.models.lightgcn import PairWiseModel
-from sklearn.metrics import roc_auc_score
 import os
 
 
@@ -14,22 +11,25 @@ try:
     import sys
     sys.path.append('src/data')
     sampling = imp_from_filepath('src/data/sampling.cpp')
-    sampling.seed(world.seed)
+    sampling.seed(42)
     sample_ext = True
-    world.cprint("Cpp extension loaded")
+    print("Cpp extension loaded")
 except:
-    world.cprint("Cpp extension not loaded")
+    print("Cpp extension not loaded")
     sample_ext = False
 
 
 class BPRLoss:
     def __init__(self,
-                 recmodel : PairWiseModel,
-                 config : dict):
+                 recmodel,
+                 args):
+        self.config = args.optimizer
         self.model = recmodel
-        self.weight_decay = config['decay']
-        self.lr = config['lr']
-        self.opt = optim.Adam(recmodel.parameters(), lr=self.lr)
+        self.weight_decay = self.config.args['weight_decay']
+        self.lr = self.config.args['lr']
+        optimizer_class  = getattr(optim,self.config.type)
+        self.opt = optimizer_class(recmodel.parameters(), lr=self.lr)
+        # self.opt = optim.Adam(recmodel.parameters(), lr=self.lr)
 
     def stageOne(self, users, pos, neg):
         loss, reg_loss = self.model.bpr_loss(users, pos, neg)
@@ -98,16 +98,15 @@ def set_seed(seed):
         torch.cuda.manual_seed_all(seed)
     torch.manual_seed(seed)
 
-def getFileName():
-    if world.model_name == 'mf':
-        file = f"mf-{world.dataset}-{world.config['latent_dim_rec']}.pth.tar"
-    elif world.model_name == 'lgn':
-        file = f"lgn-{world.dataset}-{world.config['lightGCN_n_layers']}-{world.config['latent_dim_rec']}.pth.tar"
-    return os.path.join(world.FILE_PATH,file)
+def getFileName(args):
 
-def minibatch(*tensors, **kwargs):
+    file = f'{args.model}-{args.model_experiment_name}.pth.tar'   
 
-    batch_size = kwargs.get('batch_size', world.config['bpr_batch_size'])
+    return os.path.join(args.FILE_PATH,file)
+    
+def minibatch(args,*tensors, **kwargs):
+
+    batch_size = kwargs.get('batch_size', args.dataloader['bpr_batch_size'])
 
     if len(tensors) == 1:
         tensor = tensors[0]
@@ -201,74 +200,3 @@ class timer:
         else:
             self.tape.append(timer.time() - self.start)
 
-
-# ====================Metrics==============================
-# =========================================================
-def RecallPrecision_ATk(test_data, r, k):
-    """
-    test_data should be a list? cause users may have different amount of pos items. shape (test_batch, k)
-    pred_data : shape (test_batch, k) NOTE: pred_data should be pre-sorted
-    k : top-k
-    """
-    right_pred = r[:, :k].sum(1)
-    precis_n = k
-    recall_n = np.array([len(test_data[i]) for i in range(len(test_data))])
-    recall = np.sum(right_pred/recall_n)
-    precis = np.sum(right_pred)/precis_n
-    return {'recall': recall, 'precision': precis}
-
-
-def MRRatK_r(r, k):
-    """
-    Mean Reciprocal Rank
-    """
-    pred_data = r[:, :k]
-    scores = np.log2(1./np.arange(1, k+1))
-    pred_data = pred_data/scores
-    pred_data = pred_data.sum(1)
-    return np.sum(pred_data)
-
-def NDCGatK_r(test_data,r,k):
-    """
-    Normalized Discounted Cumulative Gain
-    rel_i = 1 or 0, so 2^{rel_i} - 1 = 1 or 0
-    """
-    assert len(r) == len(test_data)
-    pred_data = r[:, :k]
-
-    test_matrix = np.zeros((len(pred_data), k))
-    for i, items in enumerate(test_data):
-        length = k if k <= len(items) else len(items)
-        test_matrix[i, :length] = 1
-    max_r = test_matrix
-    idcg = np.sum(max_r * 1./np.log2(np.arange(2, k + 2)), axis=1)
-    dcg = pred_data*(1./np.log2(np.arange(2, k + 2)))
-    dcg = np.sum(dcg, axis=1)
-    idcg[idcg == 0.] = 1.
-    ndcg = dcg/idcg
-    ndcg[np.isnan(ndcg)] = 0.
-    return np.sum(ndcg)
-
-def AUC(all_item_scores, dataset, test_data):
-    """
-        design for a single user
-    """
-    dataset : BasicDataset
-    r_all = np.zeros((dataset.m_items, ))
-    r_all[test_data] = 1
-    r = r_all[all_item_scores >= 0]
-    test_item_scores = all_item_scores[all_item_scores >= 0]
-    return roc_auc_score(r, test_item_scores)
-
-def getLabel(test_data, pred_data):
-    r = []
-    for i in range(len(test_data)):
-        groundTrue = test_data[i]
-        predictTopK = pred_data[i]
-        pred = list(map(lambda x: x in groundTrue, predictTopK))
-        pred = np.array(pred).astype("float")
-        r.append(pred)
-    return np.array(r).astype('float')
-
-# ====================end Metrics=============================
-# =========================================================
