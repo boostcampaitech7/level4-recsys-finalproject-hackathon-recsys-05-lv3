@@ -2,25 +2,33 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import os
 
-def data2txt():
-    # 파일 경로 설정
-    file_path = 'data/MovieLens1M/final/train.txt'
 
-    # 파일 존재 여부 확인
-    if os.path.exists(file_path):
-        print("train.txt 파일이 존재합니다.")
-    else:
-        print("train.txt 파일이 존재하지 않습니다.")
-        
-        try : 
-            rating_df = pd.read_csv('data/MovieLens1M/raw/ratings.dat', sep='::', engine='python',
+
+class preprocessing_data:
+    def __init__(self, dataset_path, threshold=4.0):
+        self.dataset_path = dataset_path
+        self.threshold = threshold
+        self.preprocessed_path = os.path.join(dataset_path, 'preprocessed')
+        self.train_file = os.path.join(self.preprocessed_path, 'train.txt')
+        self.test_file = os.path.join(self.preprocessed_path, 'test.txt')
+        self.process_data()
+ 
+    def load_ratings_data(self):
+        try:
+            file_path = os.path.join(self.dataset_path, 'raw', 'ratings.dat')
+            rating_df = pd.read_csv(file_path, sep='::', engine='python',
                                     names=['userId','movieId','rating', 'timestamp'], header=None)
-        except FileNotFoundError :
-            print('파일이 없습니다.')
-
-        # threshold
-        threshold = 4.0
-        df = rating_df[rating_df['rating']>=threshold]
+            return rating_df
+        except FileNotFoundError:
+            print(f"파일 {file_path}이 없습니다.")
+            return 
+    
+    def process_data(self):
+        rating_df = self.load_ratings_data()
+        if rating_df is None:
+            return
+        
+        df = rating_df[rating_df['rating'] >= self.threshold]
 
         df['newUserId'] = pd.factorize(df['userId'])[0]
         df['newItemId'] = pd.factorize(df['movieId'])[0]
@@ -43,16 +51,18 @@ def data2txt():
                 train_data.append((user_id, train_part))
                 test_data.append((user_id, test_part))
 
-        final_path = 'data/MovieLens1M/final'
+        self.save_data(train_data, test_data)
 
-        if not os.path.exists(final_path):
-            os.makedirs(final_path)
-        
-        with open(final_path+'/train.txt','w') as f:
+    def save_data(self, train_data, test_data):
+        if not os.path.exists(self.preprocessed_path):
+            os.makedirs(self.preprocessed_path)
+
+        with open(self.train_file, 'w') as f:
             for (u, items) in train_data:
                 line = str(u) + ' ' + ' '.join(map(str, items))
                 f.write(line + '\n')
-        with open(final_path+'/test.txt', 'w') as f:
+
+        with open(self.test_file, 'w') as f:
             for (u, items) in test_data:
                 line = str(u) + ' ' + ' '.join(map(str, items))
                 f.write(line + '\n')
