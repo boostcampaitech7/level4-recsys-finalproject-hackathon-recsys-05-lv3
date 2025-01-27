@@ -53,7 +53,7 @@ try:
 
     world.cprint("[TEST]")
     results = Procedure.Test(dataset, Recmodel, epoch, w, world.config['multicore'])
-    wandblogger.log_eval_metrics({**results}, head="test")
+    wandblogger.log_metrics({**results}, head="test")
 finally:
     if world.tensorboard:
         w.close()
