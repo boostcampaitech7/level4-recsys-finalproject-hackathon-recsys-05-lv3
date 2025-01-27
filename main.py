@@ -1,59 +1,153 @@
-from src import preprocessing, world, utils, Procedure, register, wandblogger
+from src import utils, Procedure, wandblogger
 from src.data import dataloader
+import src.models as model_module
 import torch
 from tensorboardX import SummaryWriter
+import torch.optim as optimizer_module
 import time
+import os
 from os.path import join
+import argparse
+from omegaconf import OmegaConf
+import ast
+import multiprocessing
+from src.data.preprocessing import preprocessing_data
 # ==============================
-utils.set_seed(world.seed)
-print(">>SEED:", world.seed)
 # ==============================
 
-preprocessing.data2txt() # 해당 경로에 txt가 없는 경우 최초 한번 실행
 
-if world.dataset in ['MovieLens1M', 'MovieLens32M']:
-    dataset = dataloader.Loader(path="./data/"+world.dataset+"/final")
+def main(args) :
+    ROOT_PATH = os.path.dirname(os.path.dirname(__file__))
+    args.CODE_PATH = join(ROOT_PATH, 'code')
+    args.DATA_PATH = join(args.CODE_PATH, 'data')
+    args.BOARD_PATH = join(args.CODE_PATH, 'runs')
+    args.FILE_PATH = join(args.CODE_PATH, 'checkpoints')
+    args.CORES = multiprocessing.cpu_count() // 2
 
+    import sys
+    sys.path.append(join(args.CODE_PATH, 'sources'))
 
-Recmodel = register.MODELS[world.model_name](world.config, dataset)
-Recmodel = Recmodel.to(world.device)
-bpr = utils.BPRLoss(Recmodel, world.config)
+    if not os.path.exists(args.FILE_PATH):
+        os.makedirs(args.FILE_PATH, exist_ok=True)
 
-weight_file = utils.getFileName()
-print(f"load and save to {weight_file}")
-if world.LOAD:
+    
+    wandb_logger = wandblogger.WandbLogger(args)
+
+    
+    preprocessing_data(args.dataset.data_dir+args.dataset.data)
+
+    utils.set_seed(args.seed)
+    print(">>SEED:", args.seed)
+
+    dataset = dataloader.Loader(args,path="./data/"+args.dataset.data+args.dataset.preprocess_dir)
+
+    Recmodel = getattr(model_module, args.model)(args, dataset)
+    Recmodel = Recmodel.to(args.device)
+    bpr = utils.BPRLoss(Recmodel, args)
+
+    weight_file = utils.getFileName(args)
+
+    print(f"load and save to {weight_file}")
+    
+    if args.train.resume:
+        try:
+            Recmodel.load_state_dict(torch.load(weight_file,map_location=torch.device('cpu')))
+            print(f"loaded model weights from {weight_file}")
+        except FileNotFoundError:
+            print(f"{weight_file} not exists, start from beginning")
+    
+    Neg_k = 1
+
+    # init tensorboard
+    if args.tensorboard:
+        w : SummaryWriter = SummaryWriter(
+                                        join(args.BOARD_PATH, time.strftime("%m-%d-%Hh%Mm%Ss-") + "-" + args.memo)
+                                        )
+    else:
+        w = None
+        print("not enable tensorflowboard")
+
+    
+    wandb_logger = wandblogger.WandbLogger(args)
+
     try:
-        Recmodel.load_state_dict(torch.load(weight_file,map_location=torch.device('cpu')))
-        world.cprint(f"loaded model weights from {weight_file}")
-    except FileNotFoundError:
-        print(f"{weight_file} not exists, start from beginning")
-Neg_k = 1
+        for epoch in range(args.train.epochs):
+            start = time.time()
+            if epoch %10 == 0:
+                print("[TEST]")
+                Procedure.Test(args,dataset, Recmodel, epoch, w)
+            output_information, aver_loss = Procedure.BPR_train_original(args,dataset, Recmodel, bpr, epoch, neg_k=Neg_k,w=w)
+            wandb_logger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
+            print(f'EPOCH[{epoch+1}/{args.train.epochs}] {output_information}')
+            torch.save(Recmodel.state_dict(), weight_file)
 
-# init tensorboard
-if world.tensorboard:
-    w : SummaryWriter = SummaryWriter(
-                                    join(world.BOARD_PATH, time.strftime("%m-%d-%Hh%Mm%Ss-") + "-" + world.comment)
-                                    )
-else:
-    w = None
-    world.cprint("not enable tensorflowboard")
+        print("[TEST]")
+        results = Procedure.Test(args,dataset, Recmodel, epoch, w)
+        wandb_logger.log_metrics({**results}, head="test")
+    finally:
+        if args.tensorboard:
+            w.close()
 
-wandblogger = wandblogger.WandbLogger(world.config)
+        if args.wandb :
+            wandb_logger.finish()
 
-try:
-    for epoch in range(world.TRAIN_epochs):
-        start = time.time()
-        if epoch %10 == 0:
-            world.cprint("[TEST]")
-            Procedure.Test(dataset, Recmodel, epoch, w, world.config['multicore'])
-        output_information, aver_loss = Procedure.BPR_train_original(dataset, Recmodel, bpr, epoch, neg_k=Neg_k,w=w)
-        wandblogger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
-        print(f'EPOCH[{epoch+1}/{world.TRAIN_epochs}] {output_information}')
-        torch.save(Recmodel.state_dict(), weight_file)
 
-    world.cprint("[TEST]")
-    results = Procedure.Test(dataset, Recmodel, epoch, w, world.config['multicore'])
-    wandblogger.log_metrics({**results}, head="test")
-finally:
-    if world.tensorboard:
-        w.close()
+if __name__ == "__main__":
+
+
+    ######################## BASIC ENVIRONMENT SETUP
+    parser = argparse.ArgumentParser(description='parser')
+    
+
+    arg = parser.add_argument
+    str2dict = lambda x: {k:int(v) for k,v in (i.split(':') for i in x.split(','))}
+
+    # add basic arguments (no default value)
+    arg('--config', '-c', '--c', type=str, 
+        help='Configuration 파일을 설정합니다.', required=True)
+    arg('--model', '-m', '--m', type=str, 
+        choices=['LightGCN'],
+        help='학습 및 예측할 모델을 선택할 수 있습니다.')
+    arg('--seed', '-s', '--s', type=int,
+        help='데이터분할 및 모델 초기화 시 사용할 시드를 설정할 수 있습니다.')
+    arg('--device', '-d', '--d', type=str, 
+        choices=['cuda', 'cpu', 'mps'], help='사용할 디바이스를 선택할 수 있습니다.')
+    arg('--model_experiment_name', '--men','-men',type=str,
+        help='model 저장 이름을 설정할 수 있습니다.')
+    arg('--wandb', '--w', '-w', type=ast.literal_eval, 
+        help='wandb를 사용할지 여부를 설정할 수 있습니다.')
+    arg('--wandb_project', '--wp', '-wp', type=str,
+        help='wandb 프로젝트 이름을 설정할 수 있습니다.')
+    arg('--wandb_experiment_name', '--wen', '-wen', type=str,
+        help='wandb에서 사용할 run 이름을 설정할 수 있습니다.')
+    arg('--tensorboard','--tb','-tb',type=str,
+        help='Tensorboard를 사용할 지 선택합니다.')
+    arg('--model_args', '--ma', '-ma', type=ast.literal_eval)
+    arg('--dataloader', '--dl', '-dl', type=ast.literal_eval)
+    arg('--dataset', '--dset', '-dset', type=ast.literal_eval)
+    arg('--optimizer', '-opt', '--opt', type=ast.literal_eval)
+    arg('--loss', '-l', '--l', type=str)
+    arg('--metrics', '-met', '--met', type=ast.literal_eval)
+    arg('--train', '-t', '--t', type=ast.literal_eval)
+
+    
+    args = parser.parse_args()
+
+
+    ######################## Config with yaml
+    config_args = OmegaConf.create(vars(args))
+    config_yaml = OmegaConf.load(args.config) if args.config else OmegaConf.create()
+
+    # args에 있는 값이 config_yaml에 있는 값보다 우선함. (단, None이 아닌 값일 경우)
+    for key in config_args.keys():
+        if config_args[key] is not None:
+            config_yaml[key] = config_args[key]
+    
+
+    config_yaml['model_args'] = config_yaml.model_args[config_yaml.model]
+
+    # Configuration 콘솔에 출력
+    print(OmegaConf.to_yaml(config_yaml))
+    
+    ######################## MAIN
+    main(config_yaml)
