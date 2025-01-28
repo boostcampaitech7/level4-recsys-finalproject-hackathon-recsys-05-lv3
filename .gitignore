@@ -28,10 +28,10 @@ __pycache__/
 
 __pycache__
 
-MovieLens1M
-
 wandb
 *sampling.cpython*
 *.rendered.*
 runs
 checkpoints
+
+data/*
