@@ -9,13 +9,13 @@ repos:
         args: ["--maxkb=5120"]                  # 제한 크기: 5MB
 
 -   repo: https://github.com/psf/black
-    rev: 24.10.0
+    rev: 25.1.0
     hooks:
     -   id: black                               # Python 코드 포매터
         args: ["--line-length", "100"]          # 라인 길이 제한을 100자로 설정 (기본값: 88자)
 
 -   repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+    rev: 6.0.0
     hooks:
     -   id: isort                               # import 정렬 도구
 
