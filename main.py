@@ -64,7 +64,6 @@ def main(args) :
     save_interval = args.train['save_interval']
     try:
         for epoch in range(args.train.epochs):
-            start = time.time()
             if epoch %10 == 0:
                 print("[TEST]")
                 procedure.Test(args,dataset, Recmodel, epoch, w)
