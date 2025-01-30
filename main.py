@@ -11,7 +11,7 @@ import torch.optim as optimizer_module
 from tensorboardX import SummaryWriter
 from omegaconf import OmegaConf
 
-from src import utils, Procedure, wandblogger
+from src import utils, procedure, wandblogger
 import src.models as model_module
 from src.data import dataloader
 from src.data.preprocessing import preprocessing_data
