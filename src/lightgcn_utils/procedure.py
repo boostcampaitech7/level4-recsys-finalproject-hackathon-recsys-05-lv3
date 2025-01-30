@@ -9,9 +9,9 @@ import src.lightgcn_utils.metrics as metric_module
 
 
 METRIC_NAMES = {
-    'precision': 'Precision_atK',
-    'recall': 'Recall_atK',
-    'ndcg': 'NDCG_atK'
+    'precision': 'precision_at_k',
+    'recall': 'recall_at_k',
+    'ndcg': 'ndcg_at_k'
 }
 
 
@@ -67,10 +67,10 @@ def test_one_batch(X):
         #     metric_fn = getattr(metric_module,METRIC_NAMES[metric])().to(args.device)
             
 
-        ret = metric_module.RecallPrecision_ATk(groundTrue, r, k)
+        ret = metric_module.recall_precision_at_k(groundTrue, r, k)
         pre.append(ret['precision'])
         recall.append(ret['recall'])
-        ndcg.append(metric_module.NDCG_atK(groundTrue,r,k))
+        ndcg.append(metric_module.ndcg_at_k(groundTrue,r,k))
     return {'recall':np.array(recall), 
             'precision':np.array(pre), 
             'ndcg':np.array(ndcg)}

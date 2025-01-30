@@ -3,7 +3,7 @@ from src.data.dataloader import BasicDataset
 from sklearn.metrics import roc_auc_score
 
 
-def RecallPrecision_ATk(test_data, r, k):
+def recall_precision_at_k(test_data, r, k):
     """
     test_data should be a list? cause users may have different amount of pos items. shape (test_batch, k)
     pred_data : shape (test_batch, k) NOTE: pred_data should be pre-sorted
@@ -17,7 +17,7 @@ def RecallPrecision_ATk(test_data, r, k):
     return {'recall': recall, 'precision': precis}
 
 
-def Recall_atk(test_data, r, k):
+def recall_at_k(test_data, r, k):
     """
     Recall@K
     """
@@ -27,7 +27,7 @@ def Recall_atk(test_data, r, k):
     return recall
 
 
-def Precision_atK(test_data, r, k):
+def precision_at_k(test_data, r, k):
     """
     Precision@K
     """
@@ -37,7 +37,7 @@ def Precision_atK(test_data, r, k):
     return precision
 
 
-def NDCG_atK(test_data,r,k):
+def ndcg_at_k(test_data,r,k):
     """
     Normalized Discounted Cumulative Gain
     rel_i = 1 or 0, so 2^{rel_i} - 1 = 1 or 0
@@ -58,7 +58,7 @@ def NDCG_atK(test_data,r,k):
     ndcg[np.isnan(ndcg)] = 0.
     return np.sum(ndcg)
 
-def AUC(all_item_scores, dataset, test_data):
+def auc(all_item_scores, dataset, test_data):
     """
         design for a single user
     """
@@ -69,7 +69,7 @@ def AUC(all_item_scores, dataset, test_data):
     test_item_scores = all_item_scores[all_item_scores >= 0]
     return roc_auc_score(r, test_item_scores)
 
-def MRR_atk(r, k):
+def mrr_at_k(r, k):
     """
     Mean Reciprocal Rank
     """
