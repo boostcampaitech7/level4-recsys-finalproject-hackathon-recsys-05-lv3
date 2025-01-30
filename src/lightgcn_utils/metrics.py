@@ -79,12 +79,10 @@ def mrr_at_k(r, k):
     pred_data = pred_data.sum(1)
     return np.sum(pred_data)
 
-def getLabel(test_data, pred_data):
-    r = []
-    for i in range(len(test_data)):
-        groundTrue = test_data[i]
-        predictTopK = pred_data[i]
-        pred = list(map(lambda x: x in groundTrue, predictTopK))
-        pred = np.array(pred).astype("float")
-        r.append(pred)
-    return np.array(r).astype('float')
+def get_label(test_data, predictions):
+    labels = np.zeros_like(predictions, dtype=np.float32)
+
+    for i, ground_truth in enumerate(test_data):
+        labels[i] = np.isin(predictions[i], ground_truth).astype(np.float32)
+
+    return labels
