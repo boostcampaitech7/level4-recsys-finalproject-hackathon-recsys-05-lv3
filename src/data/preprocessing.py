@@ -57,12 +57,10 @@ class preprocessing_data:
         if not os.path.exists(self.preprocessed_path):
             os.makedirs(self.preprocessed_path)
 
-        with open(self.train_file, 'w') as f:
+        with open(self.train_file, 'w', encoding="utf-8") as f:
             for (u, items) in train_data:
-                line = str(u) + ' ' + ' '.join(map(str, items))
-                f.write(line + '\n')
+                f.write(f"{u} {' '.join(map(str, items))}\n")
 
-        with open(self.test_file, 'w') as f:
+        with open(self.test_file, 'w', encoding="utf-8") as f:
             for (u, items) in test_data:
-                line = str(u) + ' ' + ' '.join(map(str, items))
-                f.write(line + '\n')
+                f.write(f"{u} {' '.join(map(str, items))}\n")
