@@ -87,10 +87,8 @@ def Test(args,dataset, Recmodel, epoch, w=None):
     if args.model_args['multicore'] == 1:
         pool = multiprocessing.Pool(CORES)
 
-    results = {}
-
-    for name in args.metrics :
-        results[name] = np.zeros(len(args.topks))
+    metrics = args.metrics 
+    results = {metric: np.zeros(len(args.topks)) for metric in metrics}
 
     print(results)
     with torch.no_grad():
@@ -141,20 +139,17 @@ def Test(args,dataset, Recmodel, epoch, w=None):
                 pre_results.append(test_one_batch(x))
         scale = float(u_batch_size/len(users))
         for result in pre_results:
-            results['recall'] += result['recall']
-            results['precision'] += result['precision']
-            results['ndcg'] += result['ndcg']
-        results['recall'] /= float(len(users))
-        results['precision'] /= float(len(users))
-        results['ndcg'] /= float(len(users))
+            for metric in metrics:
+                results[metric] += result[metric]
+        for metric in metrics:
+            results[metric] /= float(len(users))
+
         # results['auc'] = np.mean(auc_record)
         if args.tensorboard:
-            w.add_scalars(f'Test/Recall@{args.topks}',
-                          {str(args.topks[i]): results['recall'][i] for i in range(len(args.topks))}, epoch)
-            w.add_scalars(f'Test/Precision@{args.topks}',
-                          {str(args.topks[i]): results['precision'][i] for i in range(len(args.topks))}, epoch)
-            w.add_scalars(f'Test/NDCG@{args.topks}',
-                          {str(args.topks[i]): results['ndcg'][i] for i in range(len(args.topks))}, epoch)
+            for metric in metrics:
+                w.add_scalars(f"Test/{metric.capitalize()}@{args.topks}",
+                              {str(args.topks[i]): results[metric][i] for i in range(len(args.topks))},
+                              epoch)
         if args.model_args['multicore'] == 1:
             pool.close()
         print(results)
