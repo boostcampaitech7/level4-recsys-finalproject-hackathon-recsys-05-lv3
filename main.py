@@ -54,28 +54,26 @@ def main(args) :
     
 
     # init tensorboard
-    if args.tensorboard:
-        w : SummaryWriter = SummaryWriter(
-                                        join(args.BOARD_PATH, time.strftime("%m-%d-%Hh%Mm%Ss-") + "-" + args.memo)
-                                        )
-    else:
-        w = None
-        print("not enable tensorflowboard")
+    w = SummaryWriter(join(args.BOARD_PATH, time.strftime("%m-%d-%Hh%Mm%Ss-") + "-" + args.memo)) if args.tensorboard else None
+    if not args.tensorboard:
+        print("TensorBoard logging is disabled.")
 
     
     wandb_logger = wandblogger.WandbLogger(args)
-
+    neg_k = args.dataloader['neg_k']
+    save_interval = args.train['save_interval']
     try:
         for epoch in range(args.train.epochs):
             start = time.time()
             if epoch %10 == 0:
                 print("[TEST]")
                 Procedure.Test(args,dataset, Recmodel, epoch, w)
-            neg_k = args.dataloader['neg_k']
             output_information, aver_loss = Procedure.BPR_train_original(args,dataset, Recmodel, bpr, epoch, neg_k=neg_k,w=w)
             wandb_logger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
             print(f'EPOCH[{epoch+1}/{args.train.epochs}] {output_information}')
-            torch.save(Recmodel.state_dict(), weight_file)
+            if (epoch + 1) % save_interval == 0:
+                torch.save(Recmodel.state_dict(), weight_file)
+                print(f"Model saved at epoch {epoch+1}")
 
         print("[TEST]")
         results = Procedure.Test(args,dataset, Recmodel, epoch, w)

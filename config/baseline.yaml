@@ -66,3 +66,4 @@ train:
     # save_best_model: True               # True: val_loss가 최소인 모델 저장 / False: 모든 모델 저장
     resume: False                               # 이어서 학습할 경우 True
     resume_path: saved/checkpoint/              # 이어서 학습할 모델 경로
+    save_interval: 5                    # 몇 에폭마다 저장할지 결정하는 변수
