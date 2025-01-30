@@ -52,7 +52,6 @@ def main(args) :
         except FileNotFoundError:
             print(f"{weight_file} not exists, start from beginning")
     
-    Neg_k = 1
 
     # init tensorboard
     if args.tensorboard:
@@ -72,7 +71,8 @@ def main(args) :
             if epoch %10 == 0:
                 print("[TEST]")
                 Procedure.Test(args,dataset, Recmodel, epoch, w)
-            output_information, aver_loss = Procedure.BPR_train_original(args,dataset, Recmodel, bpr, epoch, neg_k=Neg_k,w=w)
+            neg_k = args.dataloader['neg_k']
+            output_information, aver_loss = Procedure.BPR_train_original(args,dataset, Recmodel, bpr, epoch, neg_k=neg_k,w=w)
             wandb_logger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
             print(f'EPOCH[{epoch+1}/{args.train.epochs}] {output_information}')
             torch.save(Recmodel.state_dict(), weight_file)
