@@ -28,7 +28,7 @@ class preprocessing_data:
         if rating_df is None:
             return
         
-        df = rating_df[rating_df['rating'] >= self.threshold]
+        df = rating_df[rating_df['rating'] >= self.threshold].copy()
 
         df['newUserId'] = pd.factorize(df['userId'])[0]
         df['newItemId'] = pd.factorize(df['movieId'])[0]
