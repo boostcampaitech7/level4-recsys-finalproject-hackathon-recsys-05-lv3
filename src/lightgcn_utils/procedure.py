@@ -19,13 +19,13 @@ METRIC_NAMES = {
 CORES = multiprocessing.cpu_count() // 2
 
 
-def BPR_train_original(args,dataset, recommend_model, loss_class, epoch, neg_k=1, w=None):
+def BPR_train_original(args,dataset, recommend_model, loss_class, epoch, neg_ratio=1, w=None):
     Recmodel = recommend_model
     Recmodel.train()
     bpr: utils.BPRLoss = loss_class
     
     with utils.timer(name="Sample"):
-        S = utils.UniformSample_original(dataset, neg_k)
+        S = utils.UniformSample_original(dataset, neg_ratio)
     users = torch.Tensor(S[:, 0]).long()
     posItems = torch.Tensor(S[:, 1]).long()
     negItems = torch.Tensor(S[:, 2]).long()

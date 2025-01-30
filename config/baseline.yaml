@@ -42,7 +42,7 @@ dataloader:
     # shuffle: True       # 학습 데이터 셔플 여부
     # num_workers: 0      # 멀티프로세서 수. 0: 메인프로세서만 사용
     test_batch_size : 512
-    neg_k : 1
+    neg_ratio : 1
 
 
 loss: BPRLoss          # 직접 정의한 loss 클래스 또는 torch.nn.Module 클래스 (https://pytorch.org/docs/stable/nn.html#loss-functions)

@@ -60,7 +60,7 @@ def main(args) :
 
     
     wandb_logger = wandblogger.WandbLogger(args)
-    neg_k = args.dataloader['neg_k']
+    neg_ratio = args.dataloader['neg_ratio']
     save_interval = args.train['save_interval']
     try:
         for epoch in range(args.train.epochs):
@@ -68,7 +68,7 @@ def main(args) :
             if epoch %10 == 0:
                 print("[TEST]")
                 Procedure.Test(args,dataset, Recmodel, epoch, w)
-            output_information, aver_loss = Procedure.BPR_train_original(args,dataset, Recmodel, bpr, epoch, neg_k=neg_k,w=w)
+            output_information, aver_loss = Procedure.BPR_train_original(args,dataset, Recmodel, bpr, epoch, neg_ratio=neg_ratio,w=w)
             wandb_logger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
             print(f'EPOCH[{epoch+1}/{args.train.epochs}] {output_information}')
             if (epoch + 1) % save_interval == 0:
