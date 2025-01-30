@@ -43,13 +43,13 @@ class BPRLoss:
         return loss.cpu().item()
 
 
-def UniformSample_original(dataset, neg_ratio = 1):
+def UniformSample_original(dataset, neg_k = 1):
     dataset : BasicDataset
     allPos = dataset.allPos
     start = time()
     if sample_ext:
         S = sampling.sample_negative(dataset.n_users, dataset.m_items,
-                                     dataset.trainDataSize, allPos, neg_ratio)
+                                     dataset.trainDataSize, allPos, neg_k)
     else:
         S = UniformSample_original_python(dataset)
     return S
