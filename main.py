@@ -29,10 +29,6 @@ def main(args) :
 
     if not os.path.exists(args.FILE_PATH):
         os.makedirs(args.FILE_PATH, exist_ok=True)
-
-    
-    wandb_logger = wandblogger.WandbLogger(args)
-
     
     preprocessing_data(args.dataset.data_dir+args.dataset.data)
 
