@@ -14,7 +14,7 @@ from omegaconf import OmegaConf
 from src import utils, procedure, wandblogger
 import src.models as model_module
 from src.data import dataloader
-from src.data.preprocessing import preprocessing_data
+from src.data.preprocessing import PreprocessingData
 
 def main(args) :
     ROOT_PATH = os.path.dirname(os.path.dirname(__file__))
@@ -30,7 +30,7 @@ def main(args) :
     if not os.path.exists(args.FILE_PATH):
         os.makedirs(args.FILE_PATH, exist_ok=True)
     
-    preprocessing_data(args.dataset.data_dir+args.dataset.data)
+    PreprocessingData(args)
 
     utils.set_seed(args.seed)
     print(">>SEED:", args.seed)

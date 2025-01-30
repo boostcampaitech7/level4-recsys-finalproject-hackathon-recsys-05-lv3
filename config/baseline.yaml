@@ -43,6 +43,8 @@ dataloader:
     # num_workers: 0      # 멀티프로세서 수. 0: 메인프로세서만 사용
     test_batch_size : 512
     neg_ratio : 1
+    split_method: "train_test_split"  # 사용할 데이터 분할 방식 선택 ("train_test_split", "leave_one_out", "k_fold")
+    threshold: 4
 
 
 loss: BPRLoss          # 직접 정의한 loss 클래스 또는 torch.nn.Module 클래스 (https://pytorch.org/docs/stable/nn.html#loss-functions)
@@ -54,7 +56,7 @@ optimizer:
         weight_decay: 0.0001  # 예) Adam 등 / L2 정규화 가중치
         amsgrad: False      # 예) Adam 등 / amsgrad 사용 여부
 
-metrics: [ precision, recall, ndcg ]  # 평가 지표. 직접 정의한 loss 클래스 또는 torch.nn.Module 클래스 (https://pytorch.org/docs/stable/nn.html#loss-functions)
+metrics: ["recall", "precision", "ndcg"]  # 원하는 지표 리스트
 
 topks : [20]    # 모델에서 Precedure 부분에 [20]이라고 설정함  test_one_batch 
 
