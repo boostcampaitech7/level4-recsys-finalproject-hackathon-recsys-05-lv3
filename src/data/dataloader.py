@@ -2,53 +2,54 @@ from os.path import join
 from time import time
 
 import numpy as np
-from scipy.sparse import csr_matrix
 import scipy.sparse as sp
 import torch
-from torch.utils.data import Dataset, DataLoader
+from scipy.sparse import csr_matrix
+from torch.utils.data import DataLoader, Dataset
+
 
 class BasicDataset(Dataset):
     def __init__(self):
         print("init dataset")
-    
+
     @property
     def n_users(self):
         raise NotImplementedError
-    
+
     @property
     def m_items(self):
         raise NotImplementedError
-    
+
     @property
     def trainDataSize(self):
         raise NotImplementedError
-    
+
     @property
     def testDict(self):
         raise NotImplementedError
-    
+
     @property
     def allPos(self):
         raise NotImplementedError
-    
+
     def getUserItemFeedback(self, users, items):
         raise NotImplementedError
-    
+
     def getUserPosItems(self, users):
         raise NotImplementedError
-    
+
     def getUserNegItems(self, users):
         """
         not necessary for large dataset
         it's stupid to return all neg items in super large dataset
         """
         raise NotImplementedError
-    
+
     def getSparseGraph(self):
         """
         build a graph in torch.sparse.IntTensor.
         Details in NGCF's matrix form
-        A = 
+        A =
             |I,   R|
             |R^T, I|
         """
@@ -61,17 +62,17 @@ class Loader(BasicDataset):
     Incldue graph information
     """
 
-    def __init__(self,config,path):
+    def __init__(self, config, path):
         # train or test
-        print(f'loading [{config.dataset.data}]')
-        self.split = config.dataloader['split']
-        self.folds = config.dataloader['n_fold']
-        self.mode_dict = {'train': 0, "test": 1}
-        self.mode = self.mode_dict['train']
+        print(f"loading [{config.dataset.data}]")
+        self.split = config.dataloader["split"]
+        self.folds = config.dataloader["n_fold"]
+        self.mode_dict = {"train": 0, "test": 1}
+        self.mode = self.mode_dict["train"]
         self.n_user = 0
         self.m_item = 0
-        train_file = path + '/train.txt'
-        test_file = path + '/test.txt'
+        train_file = path + "/train.txt"
+        test_file = path + "/test.txt"
         self.path = path
         trainUniqueUsers, trainItem, trainUser = [], [], []
         testUniqueUsers, testItem, testUser = [], [], []
@@ -80,10 +81,10 @@ class Loader(BasicDataset):
         self.device = config.device
 
         # train
-        with open(train_file) as f:
+        with open(train_file, "r", encoding="utf-8") as f:
             for l in f.readlines():
                 if len(l) > 0:
-                    l = l.strip('\n').split(' ')
+                    l = l.strip("\n").split(" ")
                     items = [int(i) for i in l[1:]]
                     uid = int(l[0])
                     trainUniqueUsers.append(uid)
@@ -97,10 +98,10 @@ class Loader(BasicDataset):
         self.trainItem = np.array(trainItem)
 
         # test
-        with open(test_file) as f:
+        with open(test_file, "r", encoding="utf-8") as f:
             for l in f.readlines():
                 if len(l) > 0:
-                    l = l.strip('\n').split(' ')
+                    l = l.strip("\n").split(" ")
                     items = [int(i) for i in l[1:]]
                     uid = int(l[0])
                     testUniqueUsers.append(uid)
@@ -114,19 +115,23 @@ class Loader(BasicDataset):
         self.testUniqueUsers = np.array(testUniqueUsers)
         self.testUser = np.array(testUser)
         self.testItem = np.array(testItem)
-        
+
         self.Graph = None
         print(f"{self.trainDataSize} interactions for training")
         print(f"{self.testDataSize} interactions for testing")
-        print(f"{config.dataset.data} Sparsity : {(1-((self.trainDataSize + self.testDataSize) / self.n_users / self.m_items))}")
+        print(
+            f"{config.dataset.data} Sparsity : {(1-((self.trainDataSize + self.testDataSize) / self.n_users / self.m_items))}"
+        )
 
         # (users,items), bipartite graph
-        self.UserItemNet = csr_matrix((np.ones(len(self.trainUser)), (self.trainUser, self.trainItem)),
-                                      shape=(self.n_user, self.m_item))
+        self.UserItemNet = csr_matrix(
+            (np.ones(len(self.trainUser)), (self.trainUser, self.trainItem)),
+            shape=(self.n_user, self.m_item),
+        )
         self.users_D = np.array(self.UserItemNet.sum(axis=1)).squeeze()
-        self.users_D[self.users_D == 0.] = 1
+        self.users_D[self.users_D == 0.0] = 1
         self.items_D = np.array(self.UserItemNet.sum(axis=0)).squeeze()
-        self.items_D[self.items_D == 0.] = 1.
+        self.items_D[self.items_D == 0.0] = 1.0
 
         # pre-calculate
         self._allPos = self.getUserPosItems(list(range(self.n_user)))
@@ -136,15 +141,15 @@ class Loader(BasicDataset):
     @property
     def n_users(self):
         return self.n_user
-    
+
     @property
     def m_items(self):
         return self.m_item
-    
+
     @property
     def trainDataSize(self):
         return self.traindataSize
-    
+
     @property
     def testDict(self):
         return self.__testDict
@@ -153,16 +158,18 @@ class Loader(BasicDataset):
     def allPos(self):
         return self._allPos
 
-    def _split_A_hat(self,A):
+    def _split_A_hat(self, A):
         A_fold = []
         fold_len = (self.n_users + self.m_items) // self.folds
         for i_fold in range(self.folds):
-            start = i_fold*fold_len
+            start = i_fold * fold_len
             if i_fold == self.folds - 1:
                 end = self.n_users + self.m_items
             else:
                 end = (i_fold + 1) * fold_len
-            A_fold.append(self._convert_sp_mat_to_sp_tensor(A[start:end]).coalesce().to(self.device))
+            A_fold.append(
+                self._convert_sp_mat_to_sp_tensor(A[start:end]).coalesce().to(self.device)
+            )
         return A_fold
 
     def _convert_sp_mat_to_sp_tensor(self, X):
@@ -172,36 +179,38 @@ class Loader(BasicDataset):
         index = torch.stack([row, col])
         data = torch.FloatTensor(coo.data)
         return torch.sparse.FloatTensor(index, data, torch.Size(coo.shape))
-        
+
     def getSparseGraph(self):
         print("loading adjacency matrix")
         if self.Graph is None:
             try:
-                pre_adj_mat = sp.load_npz(self.path + '/s_pre_adj_mat.npz')
+                pre_adj_mat = sp.load_npz(self.path + "/s_pre_adj_mat.npz")
                 print("successfully loaded...")
                 norm_adj = pre_adj_mat
-            except :
+            except:
                 print("generating adjacency matrix")
                 s = time()
-                adj_mat = sp.dok_matrix((self.n_users + self.m_items, self.n_users + self.m_items), dtype=np.float32)
+                adj_mat = sp.dok_matrix(
+                    (self.n_users + self.m_items, self.n_users + self.m_items), dtype=np.float32
+                )
                 adj_mat = adj_mat.tolil()
                 R = self.UserItemNet.tolil()
-                adj_mat[:self.n_users, self.n_users:] = R
-                adj_mat[self.n_users:, :self.n_users] = R.T
+                adj_mat[: self.n_users, self.n_users :] = R
+                adj_mat[self.n_users :, : self.n_users] = R.T
                 adj_mat = adj_mat.todok()
                 # adj_mat = adj_mat + sp.eye(adj_mat.shape[0])
-                
+
                 rowsum = np.array(adj_mat.sum(axis=1))
                 d_inv = np.power(rowsum, -0.5).flatten()
-                d_inv[np.isinf(d_inv)] = 0.
+                d_inv[np.isinf(d_inv)] = 0.0
                 d_mat = sp.diags(d_inv)
-                
+
                 norm_adj = d_mat.dot(adj_mat)
                 norm_adj = norm_adj.dot(d_mat)
                 norm_adj = norm_adj.tocsr()
                 end = time()
                 print(f"costing {end-s}s, saved norm_mat...")
-                sp.save_npz(self.path + '/s_pre_adj_mat.npz', norm_adj)
+                sp.save_npz(self.path + "/s_pre_adj_mat.npz", norm_adj)
 
             if self.split == True:
                 self.Graph = self._split_A_hat(norm_adj)
@@ -236,7 +245,7 @@ class Loader(BasicDataset):
             feedback [-1]
         """
         # print(self.UserItemNet[users, items])
-        return np.array(self.UserItemNet[users, items]).astype('uint8').reshape((-1,))
+        return np.array(self.UserItemNet[users, items]).astype("uint8").reshape((-1,))
 
     def getUserPosItems(self, users):
         posItems = []
