@@ -67,8 +67,8 @@ def main(args) :
             start = time.time()
             if epoch %10 == 0:
                 print("[TEST]")
-                Procedure.Test(args,dataset, Recmodel, epoch, w)
-            output_information, aver_loss = Procedure.BPR_train_original(args,dataset, Recmodel, bpr, epoch, neg_ratio=neg_ratio,w=w)
+                procedure.Test(args,dataset, Recmodel, epoch, w)
+            output_information, aver_loss = procedure.BPR_train_original(args,dataset, Recmodel, bpr, epoch, neg_ratio=neg_ratio,w=w)
             wandb_logger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
             print(f'EPOCH[{epoch+1}/{args.train.epochs}] {output_information}')
             if (epoch + 1) % save_interval == 0:
@@ -76,7 +76,7 @@ def main(args) :
                 print(f"Model saved at epoch {epoch+1}")
 
         print("[TEST]")
-        results = Procedure.Test(args,dataset, Recmodel, epoch, w)
+        results = procedure.Test(args,dataset, Recmodel, epoch, w)
         wandb_logger.log_metrics({**results}, head="test")
     finally:
         if args.tensorboard:
