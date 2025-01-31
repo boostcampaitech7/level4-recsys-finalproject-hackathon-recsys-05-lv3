@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split, KFold
 from typing import List, Tuple
 
 
-def train_test_split(grouped: pd.DataFrame, test_size: float = 0.2, random_state: int = 42) -> Tuple[List[Tuple[int, List[int]]], List[Tuple[int, List[int]]]]:
+def train_test_split_strategy(grouped: pd.DataFrame, test_size: float = 0.2, random_state: int = 42) -> Tuple[List[Tuple[int, List[int]]], List[Tuple[int, List[int]]]]:
     """기본 Train-Test 분할 방식"""
     train_data = []
     test_data = []
