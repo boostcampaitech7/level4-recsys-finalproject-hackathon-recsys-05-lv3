@@ -12,8 +12,8 @@ model: LightGCN       # 모델 선택
 model_experiment_name : '은'  # 로컬에 저장될 이름
 
 wandb: True                            # wandb 사용 여부
-wandb_project: 'movierec'               # wandb 프로젝트 이름
-wandb_experiment_name: '주'            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
+wandb_project: 'codetest'               # wandb 프로젝트 이름
+wandb_experiment_name: 'ju'            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
 
 tensorboard: True
 
@@ -23,8 +23,6 @@ model_args:
         n_layers: 3                 # the layer num of lightGCN
         dropout: 0               # using the dropout or not (0 or 1)
         keep_prob : 0.6
-        load: 0                  # whether to load a model (0 or 1)
-        epochs: 50               # number of training epochs
         multicore: 0             # whether to use multiprocessing in testing (0 or 1)
         pretrain: 0              # whether to use pretrained weights (0 or 1)
         A_split : True
@@ -58,14 +56,10 @@ optimizer:
 
 metrics: ["recall", "precision", "ndcg"]  # 원하는 지표 리스트
 
-topks : [20]    # 모델에서 Precedure 부분에 [20]이라고 설정함  test_one_batch 
+topks : [20,10]    # 모델에서 Precedure 부분에 [20]이라고 설정함  test_one_batch 
 
 train:
-    epochs: 20                          # 학습 에폭 수
-    # log_dir: saved/log                  # 로그 저장 경로
-    # ckpt_dir: saved/checkpoint    # 모델 저장 경로
-    # submit_dir: saved/submit            # 예측 저장 경로
-    # save_best_model: True               # True: val_loss가 최소인 모델 저장 / False: 모든 모델 저장
+    epochs: 2                          # 학습 에폭 수
     resume: False                               # 이어서 학습할 경우 True
-    resume_path: saved/checkpoint/              # 이어서 학습할 모델 경로
-    save_interval: 5                    # 몇 에폭마다 저장할지 결정하는 변수
+    save_interval: 50                    # 몇 에폭마다 모델 저장할지
+    show_interval: 5                    # 몇 에폭마다 보일지
