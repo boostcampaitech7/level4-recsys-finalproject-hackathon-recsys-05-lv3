@@ -3,7 +3,7 @@ from .data import preprocessing
 
 from .models import lightgcn
 
-from .lightgcn_utils import Procedure
+from .lightgcn_utils import procedure
 from .lightgcn_utils import utils
 
 
