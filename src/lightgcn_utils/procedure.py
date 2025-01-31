@@ -60,7 +60,7 @@ def BPR_train_original(args,dataset, recommend_model, loss_class, epoch, neg_rat
 def test_one_batch(X):
     sorted_items = X[0].numpy()
     groundTrue = X[1]
-    r = metric_module.getLabel(groundTrue, sorted_items)
+    r = metric_module.get_label(groundTrue, sorted_items)
     pre, recall, ndcg = [], [], []
     for k in [20]:
         # for metric in args.metrics :
