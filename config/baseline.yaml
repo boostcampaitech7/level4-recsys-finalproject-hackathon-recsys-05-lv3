@@ -37,8 +37,6 @@ dataloader:
     n_fold : 100
     split : True
     bpr_batch_size: 1024    # 배치 사이즈
-    # shuffle: True       # 학습 데이터 셔플 여부
-    # num_workers: 0      # 멀티프로세서 수. 0: 메인프로세서만 사용
     test_batch_size : 512
     neg_ratio : 1
     split_method: "train_test_split"  # 사용할 데이터 분할 방식 선택 ("train_test_split", "leave_one_out", "k_fold")
@@ -56,10 +54,10 @@ optimizer:
 
 metrics: ["recall", "precision", "ndcg"]  # 원하는 지표 리스트
 
-topks : [20,10]    # 모델에서 Precedure 부분에 [20]이라고 설정함  test_one_batch 
+topks : [20,10]                         # k 에 대한 value  20이면 k = 20, 지표가  여러개 나옴.
 
 train:
-    epochs: 2                          # 학습 에폭 수
-    resume: False                               # 이어서 학습할 경우 True
-    save_interval: 50                    # 몇 에폭마다 모델 저장할지
+    epochs: 2                           # 학습 에폭 수
+    resume: False                       # 이어서 학습할 경우 True
+    save_interval: 50                   # 몇 에폭마다 모델 저장할지
     show_interval: 5                    # 몇 에폭마다 보일지
