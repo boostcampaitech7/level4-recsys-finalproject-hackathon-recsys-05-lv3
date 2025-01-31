@@ -17,7 +17,7 @@ class PreprocessingData:
         self.train_file = os.path.join(self.preprocessed_path, 'train.txt')
         self.test_file = os.path.join(self.preprocessed_path, 'test.txt')
 
-        self.split_strategy = SPLIT_METHODS.get(config.dataset.split_method, train_test_split)
+        self.split_strategy = SPLIT_METHODS.get(config.dataloader.split_method, train_test_split)
         self.process_data()
  
     def load_ratings_data(self):
