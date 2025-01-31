@@ -10,10 +10,10 @@ class BPRLoss:
         self.weight_decay = self.config.args['weight_decay']
         self.lr = self.config.args['lr']
         optimizer_class  = getattr(optim,self.config.type)
-        self.opt = optimizer_class(recmodel.parameters(), lr=self.lr)
+        self.opt = optimizer_class(self.model.parameters(), lr=self.lr)
         # self.opt = optim.Adam(recmodel.parameters(), lr=self.lr)
 
-    def stageOne(self, users, pos, neg):
+    def predict(self, users, pos, neg):
         loss, reg_loss = self.model.bpr_loss(users, pos, neg)
         reg_loss = reg_loss*self.weight_decay
         loss = loss + reg_loss
