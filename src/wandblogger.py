@@ -18,7 +18,7 @@ class WandbLogger(object):
             config (dict): A dictionary of parameters used by RecBole.
         """
         self.config = config
-        self.log_wandb = config['log_wandb']
+        self.log_wandb = config['wandb']
         self.setup()
 
     def setup(self):
@@ -35,7 +35,10 @@ class WandbLogger(object):
 
             # Initialize a W&B run
             if self._wandb.run is None:
-                self._wandb.init(project=self.config['wandb_project'], name=self.config['wandb_experiment_name'], config=self.config)
+                self._wandb.init(project=self.config.wandb_project, name=self.config.wandb_experiment_name, 
+                                notes=self.config.memo if hasattr(self.config, 'memo') else None,
+                                tags=self.config.model, 
+                                )
 
             self._set_steps()
 

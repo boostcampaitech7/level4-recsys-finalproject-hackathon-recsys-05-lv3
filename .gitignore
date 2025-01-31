@@ -28,14 +28,11 @@ __pycache__/
 
 __pycache__
 
+wandb
+*sampling.cpython*
+*.rendered.*
+runs
+checkpoints
 
-data/MovieLens1M/final/train.txt
-data/MovieLens1M/final/test.txt
-data/MovieLens1M/final/s_pre_adj_mat.npz
-data/MovieLens1M/raw/movies.dat
-data/MovieLens1M/raw/ratings.dat
-data/MovieLens1M/raw/users.dat
-data/MovieLens1M/raw/README
-data/MovieLens32M
-
-sampling.cpython-310-x86_64-linux-gnu.so.lock
+data/*
+!data/.gitkeep
