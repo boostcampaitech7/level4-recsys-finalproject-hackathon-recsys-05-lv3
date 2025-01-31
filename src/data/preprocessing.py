@@ -1,10 +1,10 @@
 import pandas as pd
 # from sklearn.model_selection import train_test_split
 import os
-from src.data.split_methods import train_test_split, leave_one_out, k_fold
+from src.data.split_methods import train_test_split_strategy, leave_one_out, k_fold
 
 SPLIT_METHODS = {
-    "train_test_split": train_test_split,
+    "train_test_split": train_test_split_strategy,
     "leave_one_out": leave_one_out,
     "k_fold": lambda grouped: k_fold(grouped, k=5),  # 기본 k=5 설정
 }
@@ -17,7 +17,7 @@ class PreprocessingData:
         self.train_file = os.path.join(self.preprocessed_path, 'train.txt')
         self.test_file = os.path.join(self.preprocessed_path, 'test.txt')
 
-        self.split_strategy = SPLIT_METHODS.get(config.dataset.split_method, train_test_split)
+        self.split_strategy = SPLIT_METHODS.get(config.dataloader.split_method, train_test_split_strategy)
         self.process_data()
  
     def load_ratings_data(self):
