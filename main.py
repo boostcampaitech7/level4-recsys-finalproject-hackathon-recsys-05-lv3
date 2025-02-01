@@ -11,11 +11,14 @@ import torch.optim as optimizer_module
 from tensorboardX import SummaryWriter
 from omegaconf import OmegaConf
 
-from src import utils, trainer, wandblogger
+from src import utils, wandblogger
 import src.models as model_module
 from src.data import dataloader
 from src.data.preprocessing import PreprocessingData
+from src.lightgcn_utils.trainer import Trainer
 import src.lightgcn_utils.loss as loss_module
+
+
 
 def main(args) :
     ROOT_PATH = os.path.dirname(os.path.dirname(__file__))
@@ -51,23 +54,22 @@ def main(args) :
     
     loss = getattr(loss_module, args.loss)(Recmodel,args)
 
-    # init tensorboard
     w = SummaryWriter(join(args.BOARD_PATH, time.strftime("%m-%d-%Hh%Mm%Ss-") + "-" + args.memo)) if args.tensorboard else None
     if not args.tensorboard:
         print("TensorBoard logging is disabled.")
     
     wandb_logger = wandblogger.WandbLogger(args)
 
-    Train = trainer.ModelTrainer(args,dataset,Recmodel,loss, w)
+    trainer = Trainer(args,dataset,Recmodel,loss, w)
 
     save_interval = args.train['save_interval']
 
     try:
         for epoch in range(args.train.epochs):
-            if epoch %10 == 0:
+            if (epoch+1) % 10 == 0:
                 print("[TEST]")
-                Train.test()
-            output_information, aver_loss = Train.train()
+                trainer.test()
+            output_information, aver_loss = trainer.train()
             wandb_logger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
             print(f'EPOCH[{epoch+1}/{args.train.epochs}] {output_information}')
             if (epoch + 1) % save_interval == 0:
@@ -75,7 +77,7 @@ def main(args) :
                 print(f"Model saved at epoch {epoch+1}")
     finally:
         print("[TEST]")
-        results = Train.test()
+        results = trainer.test()
         wandb_logger.log_metrics({**results}, head="test")
         if args.tensorboard:
             w.close()
@@ -90,7 +92,6 @@ if __name__ == "__main__":
     ######################## BASIC ENVIRONMENT SETUP
     parser = argparse.ArgumentParser(description='parser')
     
-
     str2dict = lambda x: {k:int(v) for k,v in (i.split(':') for i in x.split(','))}
 
     # add basic arguments (no default value)
@@ -133,7 +134,6 @@ if __name__ == "__main__":
     for key in config_args.keys():
         if config_args[key] is not None:
             config_yaml[key] = config_args[key]
-    
 
     config_yaml['model_args'] = config_yaml.model_args[config_yaml.model]
 

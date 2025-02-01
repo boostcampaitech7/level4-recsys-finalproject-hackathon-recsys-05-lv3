@@ -11,7 +11,7 @@ METRIC_NAMES = {
     'ndcg': 'ndcg_at_k'
 }
 
-class ModelTrainer :
+class Trainer :
     def __init__(self, args, dataset, model, loss, w) :
         self.args = args
         self.dataset = dataset
