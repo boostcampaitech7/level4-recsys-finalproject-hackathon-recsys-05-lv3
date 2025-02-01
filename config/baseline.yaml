@@ -61,4 +61,3 @@ train:
     resume: False                       # 이어서 학습할 경우 True
     save_interval: 50                   # 몇 에폭마다 모델 저장할지
     show_interval: 5                    # 몇 에폭마다 보일지
-    wandb_logging_interval: 1           # 몇 에폭마다 완디비 보일지
