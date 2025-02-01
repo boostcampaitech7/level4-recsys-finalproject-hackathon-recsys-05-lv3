@@ -66,15 +66,19 @@ def main(args) :
 
     try:
         for epoch in range(args.train.epochs):
-            if (epoch+1) % 10 == 0:
-                print("[TEST]")
-                trainer.test()
             output_information, aver_loss = trainer.train()
             wandb_logger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
             print(f'EPOCH[{epoch+1}/{args.train.epochs}] {output_information}')
+            
             if (epoch + 1) % save_interval == 0:
                 torch.save(Recmodel.state_dict(), weight_file)
                 print(f"Model saved at epoch {epoch+1}")
+
+            if (epoch+1) % 10 == 0:
+                print("[TEST]")
+                results = trainer.test()
+                results = {key: value.tolist() for key, value in results.items()}
+                wandb_logger.log_metrics(results,epoch=epoch+1)
     finally:
         print("[TEST]")
         results = trainer.test()
@@ -91,7 +95,7 @@ if __name__ == "__main__":
 
     ######################## BASIC ENVIRONMENT SETUP
     parser = argparse.ArgumentParser(description='parser')
-    
+
     str2dict = lambda x: {k:int(v) for k,v in (i.split(':') for i in x.split(','))}
 
     # add basic arguments (no default value)
