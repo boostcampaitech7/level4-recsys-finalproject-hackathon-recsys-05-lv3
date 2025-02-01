@@ -57,7 +57,8 @@ metrics: ["recall", "precision", "ndcg"]  # 원하는 지표 리스트
 topks : [20,10]                         # k 에 대한 value  20이면 k = 20, 지표가  여러개 나옴.
 
 train:
-    epochs: 2                           # 학습 에폭 수
+    epochs: 4                           # 학습 에폭 수
     resume: False                       # 이어서 학습할 경우 True
     save_interval: 50                   # 몇 에폭마다 모델 저장할지
     show_interval: 5                    # 몇 에폭마다 보일지
+    wandb_logging_interval: 1           # 몇 에폭마다 완디비 보일지
