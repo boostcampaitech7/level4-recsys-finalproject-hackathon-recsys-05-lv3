@@ -7,7 +7,7 @@ r"""
 recbole.utils.wandblogger
 로부터 수정했습니다.
 """
-
+import numpy as np
 
 class WandbLogger(object):
     """WandbLogger to log metrics to Weights and Biases."""
@@ -65,9 +65,11 @@ class WandbLogger(object):
     def _add_head_to_metrics(self, metrics, head):
         head_metrics = dict()
         for k, v in metrics.items():
-            if "_step" in k:
-                head_metrics[k] = v
-            else:
-                head_metrics[f"{head}/{k}"] = v
-
+            if isinstance(v, (np.ndarray, list)):
+                for i, value in enumerate(v):
+                    topk = self.config.topks[i] 
+                    head_metrics[f"{head}/{k}_at_{topk}"] = value
+            else :
+                topk = self.config.topks[0] 
+                head_metrics[f"{head}/{k}_at_{topk}"] = v 
         return head_metrics
