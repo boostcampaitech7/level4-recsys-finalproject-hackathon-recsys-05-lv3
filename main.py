@@ -11,10 +11,14 @@ import torch.optim as optimizer_module
 from tensorboardX import SummaryWriter
 from omegaconf import OmegaConf
 
-from src import utils, procedure, wandblogger
+from src import utils, wandblogger
 import src.models as model_module
 from src.data import dataloader
 from src.data.preprocessing import PreprocessingData
+from src.lightgcn_utils.trainer import Trainer
+import src.lightgcn_utils.loss as loss_module
+
+
 
 def main(args) :
     ROOT_PATH = os.path.dirname(os.path.dirname(__file__))
@@ -23,9 +27,6 @@ def main(args) :
     args.BOARD_PATH = join(args.CODE_PATH, 'runs')
     args.FILE_PATH = join(args.CODE_PATH, 'checkpoints')
     args.CORES = multiprocessing.cpu_count() // 2
-
-    import sys
-    sys.path.append(join(args.CODE_PATH, 'sources'))
 
     if not os.path.exists(args.FILE_PATH):
         os.makedirs(args.FILE_PATH, exist_ok=True)
@@ -39,7 +40,6 @@ def main(args) :
 
     Recmodel = getattr(model_module, args.model)(args, dataset)
     Recmodel = Recmodel.to(args.device)
-    bpr = utils.BPRLoss(Recmodel, args)
 
     weight_file = utils.getFileName(args)
 
@@ -52,37 +52,38 @@ def main(args) :
         except FileNotFoundError:
             print(f"{weight_file} not exists, start from beginning")
     
+    loss = getattr(loss_module, args.loss)(Recmodel,args)
 
-    # init tensorboard
     w = SummaryWriter(join(args.BOARD_PATH, time.strftime("%m-%d-%Hh%Mm%Ss-") + "-" + args.memo)) if args.tensorboard else None
     if not args.tensorboard:
         print("TensorBoard logging is disabled.")
-
     
     wandb_logger = wandblogger.WandbLogger(args)
-    neg_ratio = args.dataloader['neg_ratio']
+
+    trainer = Trainer(args,dataset,Recmodel,loss, w)
+
     save_interval = args.train['save_interval']
+
     try:
         for epoch in range(args.train.epochs):
-            if epoch %10 == 0:
+            if (epoch+1) % 10 == 0:
                 print("[TEST]")
-                procedure.Test(args,dataset, Recmodel, epoch, w)
-            output_information, aver_loss = procedure.BPR_train_original(args,dataset, Recmodel, bpr, epoch, neg_ratio=neg_ratio,w=w)
+                trainer.test()
+            output_information, aver_loss = trainer.train()
             wandb_logger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
             print(f'EPOCH[{epoch+1}/{args.train.epochs}] {output_information}')
             if (epoch + 1) % save_interval == 0:
                 torch.save(Recmodel.state_dict(), weight_file)
                 print(f"Model saved at epoch {epoch+1}")
-
-        print("[TEST]")
-        results = procedure.Test(args,dataset, Recmodel, epoch, w)
-        wandb_logger.log_metrics({**results}, head="test")
     finally:
+        print("[TEST]")
+        results = trainer.test()
+        wandb_logger.log_metrics({**results}, head="test")
         if args.tensorboard:
             w.close()
 
-        if args.wandb :
-            wandb_logger.finish()
+        # if args.wandb :
+        #     wandb_logger.finish()
 
 
 if __name__ == "__main__":
@@ -91,7 +92,6 @@ if __name__ == "__main__":
     ######################## BASIC ENVIRONMENT SETUP
     parser = argparse.ArgumentParser(description='parser')
     
-
     str2dict = lambda x: {k:int(v) for k,v in (i.split(':') for i in x.split(','))}
 
     # add basic arguments (no default value)
@@ -134,7 +134,6 @@ if __name__ == "__main__":
     for key in config_args.keys():
         if config_args[key] is not None:
             config_yaml[key] = config_args[key]
-    
 
     config_yaml['model_args'] = config_yaml.model_args[config_yaml.model]
 
