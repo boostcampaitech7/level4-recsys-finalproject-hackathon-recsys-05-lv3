@@ -57,7 +57,7 @@ class ModelTrainer :
     
 
 
-    def test_one_batch(self,X):
+    def _test_one_batch(self,X):
         sorted_items = X[0].numpy()
         groundTrue = X[1]
         r = metric_module.get_label(groundTrue, sorted_items)
@@ -122,11 +122,11 @@ class ModelTrainer :
             assert total_batch == len(users_list)
             X = zip(rating_list, groundTrue_list)
             if self.args.model_args['multicore'] == 1:
-                pre_results = pool.map(self.test_one_batch, X)
+                pre_results = pool.map(self._test_one_batch, X)
             else:
                 pre_results = []
                 for x in X:
-                    pre_results.append(self.test_one_batch(x))
+                    pre_results.append(self._test_one_batch(x))
             scale = float(u_batch_size/len(users))
             for result in pre_results:
                 for metric in metrics:
