@@ -144,3 +144,45 @@ class Trainer :
                 pool.close()
             print(results)
             return results
+
+class Inference :
+    def __init__(self, args, dataset, model) :
+        self.args = args
+        self.dataset = dataset
+        self.model = model
+
+    def run_inference(self):
+        u_batch_size = self.args.dataloader['test_batch_size']
+        testDict  = self.dataset.testDict
+        # eval mode with no dropout
+        self.model = self.model.eval()
+        max_K = max(self.args.topks)
+
+        with torch.no_grad():
+            users = list(testDict.keys())
+            try:
+                assert u_batch_size <= len(users) / 10
+            except AssertionError:
+                print(f"inference_u_batch_size is too big for this dataset, try a small one {len(users) // 10}")
+            users_list = []
+            rating_list = []
+
+            for batch_users in utils.minibatch(self.args,users, batch_size=u_batch_size):
+                allPos = self.dataset.getUserPosItems(batch_users)
+                batch_users_gpu = torch.Tensor(batch_users).long()
+                batch_users_gpu = batch_users_gpu.to(self.args.device)
+
+                rating = self.model.getUsersRating(batch_users_gpu)
+                #rating = rating.cpu()
+                exclude_index = []
+                exclude_items = []
+                for range_i, items in enumerate(allPos):
+                    exclude_index.extend([range_i] * len(items))
+                    exclude_items.extend(items)
+                rating[exclude_index, exclude_items] = -(1<<10)
+                _, rating_K = torch.topk(rating, k=max_K)
+
+                users_list.extend(batch_users)
+                rating_list.append(rating_K.cpu())
+        
+        return np.array(users_list).reshape(-1,1), np.array(torch.cat(rating_list, dim=0))
