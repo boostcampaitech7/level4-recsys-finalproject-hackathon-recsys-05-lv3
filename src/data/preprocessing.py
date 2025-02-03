@@ -16,8 +16,9 @@ class PreprocessingData:
         self.preprocessed_path = os.path.join(self.dataset_path, 'preprocessed')
         self.train_file = os.path.join(self.preprocessed_path, 'train.txt')
         self.test_file = os.path.join(self.preprocessed_path, 'test.txt')
+        self.cold_file = os.path.join(self.preprocessed_path, 'cold_idx.txt')
 
-        self.split_strategy = SPLIT_METHODS.get(config.dataloader.split_method, train_test_split_strategy)
+        self.split_strategy = SPLIT_METHODS.get(config.dataloader.split_method, leave_one_out)
         self.process_data()
  
     def load_ratings_data(self):
@@ -42,11 +43,15 @@ class PreprocessingData:
 
         grouped = df.groupby('newUserId')['newItemId'].apply(list).reset_index()
 
-        train_data, test_data = self.split_strategy(grouped)
+        if self.split_strategy == leave_one_out:
+            train_data, test_data, cold_idx = self.split_strategy(grouped)
+            self.save_data(train_data, test_data, cold_idx)
+        else: 
+            train_data, test_data = self.split_strategy(grouped)
+            self.save_data(train_data, test_data)
+        
 
-        self.save_data(train_data, test_data)
-
-    def save_data(self, train_data, test_data):
+    def save_data(self, train_data, test_data, cold_idx=None):
         if not os.path.exists(self.preprocessed_path):
             os.makedirs(self.preprocessed_path)
 
@@ -57,3 +62,8 @@ class PreprocessingData:
         with open(self.test_file, 'w', encoding="utf-8") as f:
             for (u, items) in test_data:
                 f.write(f"{u} {' '.join(map(str, items))}\n")
+                
+        if cold_idx is not None:
+            with open(self.cold_file, 'w', encoding="utf-8") as f:
+                for i in cold_idx:
+                    f.write(f"{i}\n")
