@@ -52,7 +52,7 @@ optimizer:
         weight_decay: 0.0001  # 예) Adam 등 / L2 정규화 가중치
         amsgrad: False      # 예) Adam 등 / amsgrad 사용 여부
 
-metrics: ["recall", "precision", "ndcg"]  # 원하는 지표 리스트
+metrics: ["recall", "precision", "ndcg", "mrr", "hr"]  # 원하는 지표 리스트
 
 topks : [20,10]                         # k 에 대한 value  20이면 k = 20, 지표가  여러개 나옴.
 

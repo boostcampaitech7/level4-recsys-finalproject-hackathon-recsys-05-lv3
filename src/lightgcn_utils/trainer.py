@@ -8,7 +8,9 @@ import src.lightgcn_utils.metrics as metric_module
 METRIC_NAMES = {
     'precision': 'precision_at_k',
     'recall': 'recall_at_k',
-    'ndcg': 'ndcg_at_k'
+    'ndcg': 'ndcg_at_k',
+    'mrr': 'mrr_at_k',
+    'hr': 'hit_rate_at_k'
 }
 
 class Trainer :
