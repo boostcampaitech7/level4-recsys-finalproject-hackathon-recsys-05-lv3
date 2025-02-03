@@ -73,9 +73,11 @@ class Loader(BasicDataset):
         self.m_item = 0
         train_file = path + "/train.txt"
         test_file = path + "/test.txt"
+        cold_idx_file = path + "/cold_idx.txt"
         self.path = path
         trainUniqueUsers, trainItem, trainUser = [], [], []
         testUniqueUsers, testItem, testUser = [], [], []
+        cold_idx = []
         self.traindataSize = 0
         self.testDataSize = 0
         self.device = config.device
@@ -116,6 +118,12 @@ class Loader(BasicDataset):
         self.testUser = np.array(testUser)
         self.testItem = np.array(testItem)
 
+        # cold_idx
+        with open(cold_idx_file, "r", encoding="utf-8") as f:
+            for l in f.readlines():
+                cold_idx.append(int(l))
+        self.cold_idx = cold_idx
+
         self.Graph = None
         print(f"{self.trainDataSize} interactions for training")
         print(f"{self.testDataSize} interactions for testing")
@@ -136,6 +144,7 @@ class Loader(BasicDataset):
         # pre-calculate
         self._allPos = self.getUserPosItems(list(range(self.n_user)))
         self.__testDict = self.__build_test()
+        self.__coldDict = self.__build_cold()
         print(f"{config.dataset.data} is ready to go")
 
     @property
