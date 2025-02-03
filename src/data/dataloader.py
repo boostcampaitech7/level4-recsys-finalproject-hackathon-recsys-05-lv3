@@ -164,6 +164,10 @@ class Loader(BasicDataset):
         return self.__testDict
 
     @property
+    def coldDict(self):
+        return self.__coldDict
+
+    @property
     def allPos(self):
         return self._allPos
 
