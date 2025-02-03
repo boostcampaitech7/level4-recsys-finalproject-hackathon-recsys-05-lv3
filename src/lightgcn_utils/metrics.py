@@ -54,12 +54,27 @@ def auc(all_item_scores, dataset, test_data):
     test_item_scores = all_item_scores[all_item_scores >= 0]
     return roc_auc_score(r, test_item_scores)
 
+def hit_rate_at_k(test_data, r, k):
+    """
+    Hit Rate@K: 추천된 아이템 중 사용자가 본 아이템이 하나라도 있는지 확인
+    Args:
+        test_data: List of ground truth items for each user
+        r: Binary matrix (1 if item is in test_data, 0 otherwise)
+        k: Top-K 값
+    
+    Returns:
+        hit_rate: Hit Rate@K 값
+    """
+    hits = (r[:, :k].sum(1) > 0).astype(int)  # 추천 리스트에 정답이 하나라도 있으면 1, 없으면 0
+    hit_rate = np.mean(hits)  # 전체 사용자 평균
+    return hit_rate
+
 def mrr_at_k(test_data, r, k):
     """
     Mean Reciprocal Rank
     """
     pred_data = r[:, :k]
-    scores = np.log2(1./np.arange(1, k+1))
+    scores = np.log2(1./(np.arange(1, k+1) + 1e-10))  # NaN 방지
     pred_data = pred_data/scores
     pred_data = pred_data.sum(1)
     return np.sum(pred_data)
