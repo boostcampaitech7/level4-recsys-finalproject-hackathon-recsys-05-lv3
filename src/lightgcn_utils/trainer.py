@@ -188,3 +188,88 @@ class Inference :
                 rating_list.append(rating_K.cpu())
         
         return np.array(users_list).reshape(-1,1), np.array(torch.cat(rating_list, dim=0))
+    
+    def test_cold(self):
+            u_batch_size = self.args.dataloader['test_cold_batch_size']
+            testDict  = self.dataset.coldDict
+
+            # eval mode with no dropout
+            self.model = self.model.eval()
+            max_K = max(self.args.topks)
+            if self.args.model_args['multicore'] == 1:
+                pool = multiprocessing.Pool(self.args.CORES)
+
+            metrics = self.args.metrics 
+            results = {metric: np.zeros(len(self.args.topks)) for metric in metrics}
+
+            with torch.no_grad():
+                users = list(self.dataset.coldDict.keys())
+                try:
+                    assert u_batch_size <= len(users) / 10
+                except AssertionError:
+                    print(f"test_cold_batch_size is too big for this dataset, try a small one {len(users) // 10}")
+                users_list = []
+                rating_list = []
+                groundTrue_list = []
+                # auc_record = []
+                # ratings = []
+
+                if len(users) % u_batch_size == 0:
+                    total_batch = len(users) // u_batch_size 
+                else:
+                    total_batch = len(users) // u_batch_size + 1
+
+                for batch_users in utils.minibatch(self.args,users, batch_size=u_batch_size):
+                    allPos = self.dataset.getUserPosItems(batch_users)
+                    groundTrue = [testDict[u] for u in batch_users]
+                    batch_users_gpu = torch.Tensor(batch_users).long()
+                    batch_users_gpu = batch_users_gpu.to(self.args.device)
+
+                    rating = self.model.getUsersRating(batch_users_gpu)
+                    #rating = rating.cpu()
+                    exclude_index = []
+                    exclude_items = []
+                    for range_i, items in enumerate(allPos):
+                        exclude_index.extend([range_i] * len(items))
+                        exclude_items.extend(items)
+                    rating[exclude_index, exclude_items] = -(1<<10)
+                    _, rating_K = torch.topk(rating, k=max_K)
+                    rating = rating.cpu().numpy()
+                    # aucs = [ 
+                    #         utils.AUC(rating[i],
+                    #                   dataset, 
+                    #                   test_data) for i, test_data in enumerate(groundTrue)
+                    #     ]
+                    # auc_record.extend(aucs)
+                    del rating
+                    users_list.append(batch_users)
+                    rating_list.append(rating_K.cpu())
+                    groundTrue_list.append(groundTrue)
+
+                assert total_batch == len(users_list)
+                X = zip(rating_list, groundTrue_list)
+
+                if self.args.model_args['multicore'] == 1:
+                    pre_results = pool.map(self._test_one_batch, X)
+                else:
+                    pre_results = []
+                    for x in X:
+                        pre_results.append(self._test_one_batch(x))
+                    
+                scale = float(u_batch_size/len(users))
+                for result in pre_results:
+                    for metric in metrics:
+                        results[metric] += result[metric]
+                for metric in metrics:
+                    results[metric] /= float(len(users))
+
+                # results['auc'] = np.mean(auc_record)
+                if self.args.tensorboard:
+                    for metric in metrics:
+                        self.w.add_scalars(f"Test/{metric.capitalize()}@{self.args.topks}",
+                                    {str(self.args.topks[i]): results[metric][i] for i in range(len(self.args.topks))},
+                                    self.args.train.epochs)
+                if self.args.model_args['multicore'] == 1:
+                    pool.close()
+                print(results)
+                return results
