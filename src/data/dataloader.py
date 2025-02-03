@@ -247,6 +247,21 @@ class Loader(BasicDataset):
             else:
                 test_data[user] = [item]
         return test_data
+        
+    def __build_cold(self):
+        """
+        return:
+            dict: {user: [items]}
+        """
+        cold_data = {}
+        for i, item in enumerate(self.testItem):
+            user = self.testUser[i]
+            if user in self.cold_idx:
+                if cold_data.get(user):
+                    cold_data[user].append(item)
+                else:
+                    cold_data[user] = [item]
+        return cold_data
 
     def getUserItemFeedback(self, users, items):
         """
