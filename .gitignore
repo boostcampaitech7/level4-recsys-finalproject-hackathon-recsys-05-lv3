@@ -37,4 +37,4 @@ checkpoints
 data/*
 !data/.
 
-outputs
+outputs/*
