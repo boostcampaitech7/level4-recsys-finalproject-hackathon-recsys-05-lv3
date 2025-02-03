@@ -54,7 +54,7 @@ def auc(all_item_scores, dataset, test_data):
     test_item_scores = all_item_scores[all_item_scores >= 0]
     return roc_auc_score(r, test_item_scores)
 
-def mrr_at_k(r, k):
+def mrr_at_k(test_data, r, k):
     """
     Mean Reciprocal Rank
     """
