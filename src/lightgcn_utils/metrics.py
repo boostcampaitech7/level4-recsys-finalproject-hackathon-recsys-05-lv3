@@ -71,13 +71,17 @@ def hit_rate_at_k(test_data, r, k):
 
 def mrr_at_k(test_data, r, k):
     """
-    Mean Reciprocal Rank
+    Mean Reciprocal Rank (MRR@K)
     """
     pred_data = r[:, :k]
-    scores = np.log2(1./(np.arange(1, k+1) + 1e-10))  # NaN 방지
-    pred_data = pred_data/scores
-    pred_data = pred_data.sum(1)
-    return np.sum(pred_data)
+    ranks = np.arange(1, k+1)  # 단순한 순위 값 (1, 2, 3, ... K)
+    
+    # 첫 번째로 맞춘 정답의 Reciprocal Rank 값만 유지
+    rr = pred_data / ranks  # log 대신 1/rank 사용!
+    
+    # 사용자별 MRR을 계산 (첫 번째로 맞춘 정답만 고려)
+    rr = rr.max(axis=1)  # 가장 높은 Reciprocal Rank 값만 선택
+    return np.mean(rr)  # 전체 평균 MRR 반환
 
 def get_label(test_data, predictions):
     labels = np.zeros_like(predictions, dtype=np.float32)
