@@ -35,4 +35,6 @@ runs
 checkpoints
 
 data/*
-!data/.gitkeep
+!data/.
+
+outputs/*
