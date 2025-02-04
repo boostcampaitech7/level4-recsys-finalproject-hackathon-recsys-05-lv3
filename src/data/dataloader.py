@@ -73,9 +73,11 @@ class Loader(BasicDataset):
         self.m_item = 0
         train_file = path + "/train.txt"
         test_file = path + "/test.txt"
+        cold_idx_file = path + "/cold_idx.txt"
         self.path = path
         trainUniqueUsers, trainItem, trainUser = [], [], []
         testUniqueUsers, testItem, testUser = [], [], []
+        cold_idx = []
         self.traindataSize = 0
         self.testDataSize = 0
         self.device = config.device
@@ -116,6 +118,12 @@ class Loader(BasicDataset):
         self.testUser = np.array(testUser)
         self.testItem = np.array(testItem)
 
+        # cold_idx
+        with open(cold_idx_file, "r", encoding="utf-8") as f:
+            for l in f.readlines():
+                cold_idx.append(int(l))
+        self.cold_idx = cold_idx
+
         self.Graph = None
         print(f"{self.trainDataSize} interactions for training")
         print(f"{self.testDataSize} interactions for testing")
@@ -136,6 +144,7 @@ class Loader(BasicDataset):
         # pre-calculate
         self._allPos = self.getUserPosItems(list(range(self.n_user)))
         self.__testDict = self.__build_test()
+        self.__coldDict = self.__build_cold()
         print(f"{config.dataset.data} is ready to go")
 
     @property
@@ -153,6 +162,10 @@ class Loader(BasicDataset):
     @property
     def testDict(self):
         return self.__testDict
+
+    @property
+    def coldDict(self):
+        return self.__coldDict
 
     @property
     def allPos(self):
@@ -234,6 +247,21 @@ class Loader(BasicDataset):
             else:
                 test_data[user] = [item]
         return test_data
+        
+    def __build_cold(self):
+        """
+        return:
+            dict: {user: [items]}
+        """
+        cold_data = {}
+        for i, item in enumerate(self.testItem):
+            user = self.testUser[i]
+            if user in self.cold_idx:
+                if cold_data.get(user):
+                    cold_data[user].append(item)
+                else:
+                    cold_data[user] = [item]
+        return cold_data
 
     def getUserItemFeedback(self, users, items):
         """

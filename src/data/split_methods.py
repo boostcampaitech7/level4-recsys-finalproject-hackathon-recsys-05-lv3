@@ -21,23 +21,29 @@ def train_test_split_strategy(grouped: pd.DataFrame, test_size: float = 0.2, ran
     return train_data, test_data
 
 
-def leave_one_out(grouped: pd.DataFrame) -> Tuple[List[Tuple[int, List[int]]], List[Tuple[int, List[int]]]]:
+def leave_one_out(grouped: pd.DataFrame) -> Tuple[List[Tuple[int, List[int]]], List[Tuple[int, List[int]]], ]:
     """Leave-One-Out 방식"""
     train_data = []
     test_data = []
+    cold_idx = []
 
-    for row in grouped.itertuples():
-        user_id = row.newUserId
-        item_list = row.newItemId
-        if len(item_list) > 1:
+    for idx, row in grouped.iterrows():
+        user_id = row['newUserId']
+        item_list = row['newItemId']
+
+        if len(item_list) >= 3:
+            if 3 <= len(item_list) <= 15:
+                cold_idx.append(user_id)  
             train_part = item_list[:-1]
             test_part = [item_list[-1]]
             train_data.append((user_id, train_part))
             test_data.append((user_id, test_part))
         else:
+            if 3 <= len(item_list) <= 15:
+                cold_idx.append(user_id)  
             train_data.append((user_id, item_list))
 
-    return train_data, test_data
+    return train_data, test_data, cold_idx
 #timestamp 추가 필요
 
 def k_fold(grouped: pd.DataFrame, k: int = 5) -> Tuple[List[Tuple[int, List[int]]], List[Tuple[int, List[int]]]]:

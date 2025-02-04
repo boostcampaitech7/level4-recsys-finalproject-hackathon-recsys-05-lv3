@@ -79,10 +79,20 @@ def main(args) :
                 results = trainer.test()
                 results = {key: value.tolist() for key, value in results.items()}
                 wandb_logger.log_metrics(results,epoch=epoch+1)
+
+                if args.dataloader.split_method == "leave_one_out":
+                    results = trainer.test_cold()
+                    results = {key: value.tolist() for key, value in results.items()}
+                    wandb_logger.log_metrics(results,epoch=epoch+1, head="test_cold")
     finally:
         print("[TEST]")
         results = trainer.test()
         wandb_logger.log_metrics({**results}, head="test")
+        
+        if args.dataloader.split_method == "leave_one_out":
+            results = trainer.test_cold()
+            wandb_logger.log_metrics({**results}, head="test_cold_result")
+
         if args.tensorboard:
             w.close()
 
