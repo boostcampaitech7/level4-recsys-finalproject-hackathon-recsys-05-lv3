@@ -37,7 +37,7 @@ class PreprocessingData:
             return
         
         df = rating_df[rating_df['rating'] >= self.threshold].copy()
-
+        df = df.sort_values(by='timestamp')  # timestamp 기준 정렬
         df['newUserId'] = pd.factorize(df['userId'])[0]
         df['newItemId'] = pd.factorize(df['movieId'])[0]
 
