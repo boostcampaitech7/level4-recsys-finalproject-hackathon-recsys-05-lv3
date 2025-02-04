@@ -39,8 +39,6 @@ def leave_one_out(grouped: pd.DataFrame) -> Tuple[List[Tuple[int, List[int]]], L
             train_data.append((user_id, train_part))
             test_data.append((user_id, test_part))
         else:
-            if 3 <= len(item_list) <= 15:
-                cold_idx.append(user_id)  
             train_data.append((user_id, item_list))
 
     return train_data, test_data, cold_idx
