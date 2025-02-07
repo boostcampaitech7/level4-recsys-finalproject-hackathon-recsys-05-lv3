@@ -37,10 +37,9 @@ dataloader:
     n_fold : 100
     split : True
     bpr_batch_size: 4096    # 배치 사이즈
-    test_batch_size : 248
-    test_cold_batch_size : 43
+    test_batch_size : 128
+    test_cold_batch_size : 32
     neg_ratio : 1
-    #split_method: "leave_one_out"  # 사용할 데이터 분할 방식 선택 ("train_test_split", "leave_one_out", "k_fold")
     threshold: 4
     timestamp: "2017-01-01"
 
