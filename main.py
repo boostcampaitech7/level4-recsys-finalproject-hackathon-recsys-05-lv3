@@ -113,7 +113,7 @@ if __name__ == "__main__":
     parser.add_argument('--config', '-c', '--c', type=str, 
         help='Configuration 파일을 설정합니다.', required=True)
     parser.add_argument('--model', '-m', '--m', type=str, 
-        choices=['LightGCN'],
+        choices=['LightGCN', 'CLCRec'],
         help='학습 및 예측할 모델을 선택할 수 있습니다.')
     parser.add_argument('--seed', '-s', '--s', type=int,
         help='데이터분할 및 모델 초기화 시 사용할 시드를 설정할 수 있습니다.')
