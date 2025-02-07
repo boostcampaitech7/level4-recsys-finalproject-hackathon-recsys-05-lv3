@@ -27,6 +27,7 @@ model_args:
         pretrain: 0              # whether to use pretrained weights (0 or 1)
         A_split : True
         bigdata : True
+        use_ssl : False
     CLCRec:
         latent_dim_rec: 64               # the embedding size of lightGCN
         n_layers: 3                 # the layer num of lightGCN
