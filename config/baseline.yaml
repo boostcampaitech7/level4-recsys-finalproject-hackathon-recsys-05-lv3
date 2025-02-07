@@ -8,12 +8,12 @@ memo:
 
 seed: 0         # 시드 고정
 device: cuda    # 가능한 값 : cpu, cuda, mps
-model: CLCRec       # 모델 선택
+model: LightGCN       # 모델 선택
 model_experiment_name : 'cold_item_baseline'  # 로컬에 저장될 이름
 
-wandb: False                            # wandb 사용 여부
-wandb_project: 'cold_item_baseline'               # wandb 프로젝트 이름
-wandb_experiment_name: 'baseline'            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
+wandb: True                            # wandb 사용 여부
+wandb_project: 'None'               # wandb 프로젝트 이름
+wandb_experiment_name: 'None'            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
 
 tensorboard: True
 
