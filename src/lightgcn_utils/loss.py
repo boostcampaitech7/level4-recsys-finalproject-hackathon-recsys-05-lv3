@@ -13,8 +13,15 @@ class BPRLoss:
         self.opt = optimizer_class(self.model.parameters(), lr=self.lr)
         # self.opt = optim.Adam(recmodel.parameters(), lr=self.lr)
 
+        self.args = args
+
     def predict(self, users, pos, neg):
-        loss, reg_loss = self.model.bpr_loss(users, pos, neg)
+        
+        if self.args.model == "CLCRec":
+            loss, reg_loss = self.model.clc_loss(users, pos, neg)
+        else:
+            loss, reg_loss = self.model.bpr_loss(users, pos, neg)
+            
         reg_loss = reg_loss*self.weight_decay
         loss = loss + reg_loss
 

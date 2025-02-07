@@ -13,6 +13,7 @@ __all__ = [
     'preprocessing',
 
     'lightgcn',
+    'CLCRec',
 
     'trainer',
     'utils',
