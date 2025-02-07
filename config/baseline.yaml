@@ -28,6 +28,7 @@ model_args:
         A_split : True
         bigdata : True
         use_ssl : False
+        ssl_lamda : 0.1 # Contrastive Loss 가중치 (기본값 0.1)
     CLCRec:
         latent_dim_rec: 64               # the embedding size of lightGCN
         n_layers: 3                 # the layer num of lightGCN

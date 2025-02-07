@@ -119,11 +119,28 @@ class LightGCN(BasicModel):
         return users_emb, pos_emb, neg_emb, users_emb_ego, pos_emb_ego, neg_emb_ego
     
     def bpr_loss(self, users, pos, neg):
-        (users_emb, pos_emb, neg_emb, 
-        userEmb0,  posEmb0, negEmb0) = self.getEmbedding(users.long(), pos.long(), neg.long())
+        
+        if self.config['use_ssl']:
+            # Contrastive Learning을 위한 두 개의 증강된 뷰 생성
+            users_1, items_1 = self.computer(dropped=True)
+            users_2, items_2 = self.computer(dropped=True)
+
+            users_emb = users_1[users]
+            pos_emb = items_1[pos]
+            neg_emb = items_1[neg]
+
+            # Contrastive Loss 계산
+            loss_ssl = self.contrastive_loss(users_1, users_2) + self.contrastive_loss(items_1, items_2)
+
+        else: 
+            (users_emb, pos_emb, neg_emb,
+             userEmb0,  posEmb0, negEmb0) = self.getEmbedding(users.long(), pos.long(), neg.long())
+            loss_ssl = 0  # 기존 방식에서는 Contrastive Loss 없음
+
         reg_loss = (1/2)*(userEmb0.norm(2).pow(2) + 
                          posEmb0.norm(2).pow(2)  +
                          negEmb0.norm(2).pow(2))/float(len(users))
+        
         pos_scores = torch.mul(users_emb, pos_emb)
         pos_scores = torch.sum(pos_scores, dim=1)
         neg_scores = torch.mul(users_emb, neg_emb)
@@ -131,7 +148,7 @@ class LightGCN(BasicModel):
         
         loss = torch.mean(torch.nn.functional.softplus(neg_scores - pos_scores))
         
-        return loss, reg_loss
+        return loss + self.config['ssl_lambda'] * loss_ssl, reg_loss
        
     def forward(self, users, items):
         # compute embedding
