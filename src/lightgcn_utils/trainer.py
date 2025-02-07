@@ -47,7 +47,10 @@ class Trainer :
             if batch_i % self.args.train.show_interval== 0:
                 print(f'{batch_i} / {total_batch}')
             # 역전파
-            cri = self.loss.predict(batch_users, batch_pos, batch_neg)
+            if self.args.model == "CLCRec":
+                cri, _ = self.model.clc_loss(batch_users, batch_pos, batch_neg)
+            else:
+                cri = self.loss.predict(batch_users, batch_pos, batch_neg)
             aver_loss += cri
             if self.args.tensorboard:
                 self.w.add_scalar(f'BPRLoss/BPR', cri, self.args.train.epochs * int(len(users) / self.args.dataloader['bpr_batch_size']) 
