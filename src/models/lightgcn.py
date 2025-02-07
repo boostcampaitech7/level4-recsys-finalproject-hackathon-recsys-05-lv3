@@ -80,12 +80,22 @@ class LightGCN(BasicModel):
 
 
     def __dropout(self, keep_prob):
-        if self.A_split:
-            graph = []
-            for g in self.Graph:
-                graph.append(self.__dropout_x(g, keep_prob))
+        if self.config['use_ssl']:
+            # Degree-aware Edge Dropout 적용
+            if self.A_split:
+                graph = []
+                for g in self.Graph:
+                    graph.append(self.degree_aware_edge_dropout(g, keep_prob))
+            else:
+                graph = self.degree_aware_edge_dropout(self.Graph, keep_prob)
         else:
-            graph = self.__dropout_x(self.Graph, keep_prob)
+            if self.A_split:
+                graph = []
+                for g in self.Graph:
+                    graph.append(self.__dropout_x(g, keep_prob))
+            else:
+                graph = self.__dropout_x(self.Graph, keep_prob)
+                
         return graph
     
     def computer(self, dropped=False):
