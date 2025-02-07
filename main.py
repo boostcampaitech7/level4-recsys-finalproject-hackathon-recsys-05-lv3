@@ -65,6 +65,15 @@ def main(args) :
     save_interval = args.train['save_interval']
 
     try:
+        print("[TEST]")
+        results = trainer.test()
+        results = {key: value.tolist() for key, value in results.items()}
+        
+        print("[TEST ColdItem]")
+        cold_results = trainer.test_cold()
+        cold_results = {key: value.tolist() for key, value in cold_results.items()}
+
+
         print("[TRAIN]")
         for epoch in range(args.train.epochs):
             output_information, aver_loss = trainer.train()
@@ -75,16 +84,16 @@ def main(args) :
                 torch.save(Recmodel.state_dict(), weight_file)
                 print(f"Model saved at epoch {epoch+1}")
 
-            if (epoch+1) % 10 == 0:
-                print("[TEST]")
-                results = trainer.test()
-                results = {key: value.tolist() for key, value in results.items()}
-                wandb_logger.log_metrics(results,epoch=epoch+1)
+            # if (epoch+1) % 10 == 0:
+            print("[TEST]")
+            results = trainer.test()
+            results = {key: value.tolist() for key, value in results.items()}
+            wandb_logger.log_metrics(results,epoch=epoch+1)
 
-                print("[TEST ColdItem]")
-                cold_results = trainer.test_cold()
-                cold_results = {key: value.tolist() for key, value in cold_results.items()}
-                wandb_logger.log_metrics(cold_results,epoch=epoch+1, head="test_cold")
+            print("[TEST ColdItem]")
+            cold_results = trainer.test_cold()
+            cold_results = {key: value.tolist() for key, value in cold_results.items()}
+            wandb_logger.log_metrics(cold_results,epoch=epoch+1, head="test_cold")
     finally:
         print("[TEST]")
         results = trainer.test()
