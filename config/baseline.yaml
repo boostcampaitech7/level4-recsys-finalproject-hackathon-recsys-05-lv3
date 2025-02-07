@@ -27,6 +27,8 @@ model_args:
         pretrain: 0              # whether to use pretrained weights (0 or 1)
         A_split : True
         bigdata : True
+        use_meta_embedding: 1  # 1이면 item meta data 임베딩 사용, 0이면 기존 item_emb 사용
+        item_emb_path : "MovieLens32M/preprocessed/emb.npy"
     CLCRec:
         latent_dim_rec: 64               # the embedding size of lightGCN
         n_layers: 3                 # the layer num of lightGCN
