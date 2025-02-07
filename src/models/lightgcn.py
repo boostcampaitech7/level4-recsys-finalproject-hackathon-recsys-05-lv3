@@ -149,6 +149,21 @@ class LightGCN(BasicModel):
         loss = torch.mean(torch.nn.functional.softplus(neg_scores - pos_scores))
         
         return loss + self.config['ssl_lambda'] * loss_ssl, reg_loss
+    
+    def contrastive_loss(self, z1, z2, temperature=0.5):
+            """
+            Contrastive Loss (InfoNCE Loss)
+            - z1, z2: 두 개의 서로 다른 증강된 그래프에서 얻은 노드 임베딩
+            - temperature: Contrastive Learning에서 사용하는 온도(temperature) 파라미터
+            """
+            f = lambda x: torch.exp(x / temperature)
+            # 같은 노드의 서로 다른 뷰 간 유사도 (Positive Pair)
+            pos_sim = torch.sum(torch.mul(z1, z2), dim=1)
+            # 모든 노드 간의 관계 (Negative Pair 포함)
+            between_sim = f(torch.matmul(z1, z2.T))
+            # Contrastive Loss (InfoNCE)
+            return -torch.mean(torch.log(pos_sim / torch.sum(between_sim, dim=1)))
+
        
     def forward(self, users, items):
         # compute embedding
