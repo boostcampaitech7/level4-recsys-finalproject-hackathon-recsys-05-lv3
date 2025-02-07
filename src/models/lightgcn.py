@@ -27,6 +27,7 @@ class LightGCN(BasicModel):
         self.n_layers = self.config['n_layers']
         self.keep_prob = self.config['keep_prob']
         self.A_split = self.config['A_split']
+        self.ssl_batch_size = self.config['ssl_batch_size']
         self.embedding_user = torch.nn.Embedding(
             num_embeddings=self.num_users, embedding_dim=self.latent_dim)
         self.embedding_item = torch.nn.Embedding(
@@ -162,7 +163,7 @@ class LightGCN(BasicModel):
             neg_emb = items_1[neg]
 
             # Contrastive Loss 계산
-            loss_ssl = self.contrastive_loss(users_1, users_2) + self.contrastive_loss(items_1, items_2)
+            loss_ssl = self.contrastive_loss(users_1, users_2, batch_size=self.ssl_batch_size) + self.contrastive_loss(items_1, items_2,self.ssl_batch_size)
 
         else: 
             (users_emb, pos_emb, neg_emb,
@@ -182,7 +183,7 @@ class LightGCN(BasicModel):
         
         return loss + self.config['ssl_lambda'] * loss_ssl, reg_loss
     
-    def contrastive_loss(self, z1, z2, temperature=0.5):
+    def contrastive_loss(self, z1, z2, temperature=0.5, batch_size=1024):
             """
             Contrastive Loss (InfoNCE Loss)
             - z1, z2: 두 개의 서로 다른 증강된 그래프에서 얻은 노드 임베딩
@@ -191,8 +192,14 @@ class LightGCN(BasicModel):
             f = lambda x: torch.exp(x / temperature)
             # 같은 노드의 서로 다른 뷰 간 유사도 (Positive Pair)
             pos_sim = torch.sum(torch.mul(z1, z2), dim=1)
-            # 모든 노드 간의 관계 (Negative Pair 포함)
-            between_sim = f(torch.matmul(z1, z2.T))
+            # Negative Pair를 메모리 효율적으로 계산
+            num_nodes = z1.shape[0]
+            total_loss = 0.0
+            for i in range(0, num_nodes, batch_size):
+                z1_batch = z1[i:i+batch_size]
+                between_sim = f(torch.matmul(z1_batch, z2.T))  # ✅ 작은 배치 단위로 연산
+                total_loss += torch.sum(torch.log(pos_sim[i:i+batch_size] / torch.sum(between_sim, dim=1)))
+
             # Contrastive Loss (InfoNCE)
             return -torch.mean(torch.log(pos_sim / torch.sum(between_sim, dim=1)))
 

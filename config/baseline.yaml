@@ -29,6 +29,8 @@ model_args:
         bigdata : True
         use_ssl : False
         ssl_lamda : 0.1 # Contrastive Loss 가중치 (기본값 0.1)
+        ssl_batch_size: 1024    # Contrastive Loss 계산 시 한 번에 연산할 크기 조정 가능
+
     CLCRec:
         latent_dim_rec: 64               # the embedding size of lightGCN
         n_layers: 3                 # the layer num of lightGCN
