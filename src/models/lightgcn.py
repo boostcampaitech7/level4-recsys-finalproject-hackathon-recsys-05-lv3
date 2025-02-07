@@ -67,7 +67,7 @@ class LightGCN(BasicModel):
             graph = self.__dropout_x(self.Graph, keep_prob)
         return graph
     
-    def computer(self):
+    def computer(self, dropped=False):
         """
         propagate methods for lightGCN
         """       
@@ -76,7 +76,7 @@ class LightGCN(BasicModel):
         all_emb = torch.cat([users_emb, items_emb])
         #   torch.split(all_emb , [self.num_users, self.num_items])
         embs = [all_emb]
-        if self.config['dropout']:
+        if self.config['dropout'] or dropped:
             if self.training:
                 print("droping")
                 g_droped = self.__dropout(self.keep_prob)
