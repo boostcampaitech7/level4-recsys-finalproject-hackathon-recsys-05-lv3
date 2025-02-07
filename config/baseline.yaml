@@ -1,6 +1,6 @@
 # config.yaml
 memo: 
-    저는 김주은입니다.
+    cold start item baseline
 # 아래의 일곱 항목들은 argparser로 받은 인자를 우선적으로 사용합니다.
 #   $ python main.py --config config.yaml --seed 2024
 #   과 같이 실행할 경우 seed는 0이 아닌 2024로 설정됩니다.
@@ -9,11 +9,11 @@ memo:
 seed: 0         # 시드 고정
 device: cuda    # 가능한 값 : cpu, cuda, mps
 model: LightGCN       # 모델 선택
-model_experiment_name : '은'  # 로컬에 저장될 이름
+model_experiment_name : 'cold_item_baseline'  # 로컬에 저장될 이름
 
 wandb: True                            # wandb 사용 여부
-wandb_project: 'codetest'               # wandb 프로젝트 이름
-wandb_experiment_name: 'ju'            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
+wandb_project: 'cold_item_baseline'               # wandb 프로젝트 이름
+wandb_experiment_name: 'baseline'            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
 
 tensorboard: True
 
@@ -30,18 +30,19 @@ model_args:
 
 dataset :
   data_dir : data/
-  data : MovieLens1M
+  data : MovieLens32M
   preprocess_dir : /preprocessed
 
 dataloader:
     n_fold : 100
     split : True
-    bpr_batch_size: 1024    # 배치 사이즈
-    test_batch_size : 512
-    test_cold_batch_size : 8
+    bpr_batch_size: 4096    # 배치 사이즈
+    test_batch_size : 248
+    test_cold_batch_size : 43
     neg_ratio : 1
-    split_method: "leave_one_out"  # 사용할 데이터 분할 방식 선택 ("train_test_split", "leave_one_out", "k_fold")
+    #split_method: "leave_one_out"  # 사용할 데이터 분할 방식 선택 ("train_test_split", "leave_one_out", "k_fold")
     threshold: 4
+    timestamp: "2017-01-01"
 
 
 loss: BPRLoss          # 직접 정의한 loss 클래스 또는 torch.nn.Module 클래스 (https://pytorch.org/docs/stable/nn.html#loss-functions)
@@ -53,12 +54,12 @@ optimizer:
         weight_decay: 0.0001  # 예) Adam 등 / L2 정규화 가중치
         amsgrad: False      # 예) Adam 등 / amsgrad 사용 여부
 
-metrics: ["recall", "precision", "ndcg", "mrr", "hr"]  # 원하는 지표 리스트
+metrics: ["recall", "ndcg", "mrr", "hr"]  # 원하는 지표 리스트
 
-topks : [1]                         # k 에 대한 value  20이면 k = 20, 지표가  여러개 나옴.
+topks : [20]                         # k 에 대한 value  20이면 k = 20, 지표가  여러개 나옴.
 
 train:
-    epochs: 4                           # 학습 에폭 수
+    epochs: 30                           # 학습 에폭 수
     resume: False                       # 이어서 학습할 경우 True
-    save_interval: 50                   # 몇 에폭마다 모델 저장할지
-    show_interval: 5                    # 몇 에폭마다 보일지
+    save_interval: 10                   # 몇 에폭마다 모델 저장할지
+    show_interval: 50                    # 몇 에폭마다 보일지
