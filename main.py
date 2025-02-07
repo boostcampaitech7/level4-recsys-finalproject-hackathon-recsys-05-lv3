@@ -65,6 +65,7 @@ def main(args) :
     save_interval = args.train['save_interval']
 
     try:
+        print("[TRAIN]")
         for epoch in range(args.train.epochs):
             output_information, aver_loss = trainer.train()
             wandb_logger.log_metrics({"train_loss": aver_loss}, head="train", epoch = epoch+1)
@@ -80,18 +81,18 @@ def main(args) :
                 results = {key: value.tolist() for key, value in results.items()}
                 wandb_logger.log_metrics(results,epoch=epoch+1)
 
-                if args.dataloader.split_method == "leave_one_out":
-                    results = trainer.test_cold()
-                    results = {key: value.tolist() for key, value in results.items()}
-                    wandb_logger.log_metrics(results,epoch=epoch+1, head="test_cold")
+                print("[TEST ColdItem]")
+                cold_results = trainer.test_cold()
+                cold_results = {key: value.tolist() for key, value in cold_results.items()}
+                wandb_logger.log_metrics(cold_results,epoch=epoch+1, head="test_cold")
     finally:
         print("[TEST]")
         results = trainer.test()
         wandb_logger.log_metrics({**results}, head="test")
         
-        if args.dataloader.split_method == "leave_one_out":
-            results = trainer.test_cold()
-            wandb_logger.log_metrics({**results}, head="test_cold_result")
+        print("[TEST ColdItem]")
+        cold_results = trainer.test_cold()
+        wandb_logger.log_metrics({**cold_results}, head="test_cold_result")
 
         if args.tensorboard:
             w.close()
@@ -136,7 +137,6 @@ if __name__ == "__main__":
     parser.add_argument('--metrics', '-met', '--met', type=ast.literal_eval)
     parser.add_argument('--train', '-t', '--t', type=ast.literal_eval)
 
-    
     args = parser.parse_args()
 
 
