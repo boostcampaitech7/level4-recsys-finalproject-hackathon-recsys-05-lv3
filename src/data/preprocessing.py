@@ -8,6 +8,7 @@ class PreprocessingData:
         self.dataset_path = config.dataset.data_dir + config.dataset.data
         self.threshold = config.dataloader.threshold
         self.timestamp = config.dataloader.timestamp
+        self.release_date = int(self.timestamp[:4])-1
         self.preprocessed_path = os.path.join(self.dataset_path, 'preprocessed')
         self.train_file = os.path.join(self.preprocessed_path, 'train.txt')
         self.test_file = os.path.join(self.preprocessed_path, 'test.txt')
@@ -29,7 +30,7 @@ class PreprocessingData:
             return 
     
 
-    def _delete_rating_by_nanmovie(self, rating_df, movie_df):
+    def _delete_rating_by_nanitem(self, rating_df, movie_df):
         filtered_movie_df = movie_df[movie_df['movieId'].isin(list(rating_df['movieId'].unique()))]
         
         deleted_nan_rating_df = rating_df[rating_df['movieId'].isin(list(movie_df['movieId'].unique()))]
@@ -37,18 +38,22 @@ class PreprocessingData:
         return deleted_nan_rating_df, filtered_movie_df
 
 
-    def _delete_rating_by_time(self, rating_df, time):
+    def _delete_rating_by_futures(self, rating_df, movie_df, time):
         rating_df['timestamp'] = pd.to_datetime(rating_df['timestamp'], unit='s')
-        
         rating_df['year'] = rating_df['timestamp'].dt.year
-        
+
+        # 첫 상호작용이 timestamp 이후인 user의 모든 상호작용 제거
         first_interaction = rating_df.groupby('userId')['timestamp'].min()
         
         future_users = first_interaction[first_interaction >= time].index
         
-        deleted_old_df = rating_df[~rating_df['userId'].isin(future_users)]
-        
-        return deleted_old_df
+        deleted_future_user_df = rating_df[~rating_df['userId'].isin(future_users)]
+
+        # 개봉년도가 timestamp 이후인 item의 모든 상호작용 제거
+        future_movie = movie_df[movie_df['year'] > self.release_date]['movieId'].unique()
+        deleted_future_item_df = deleted_future_user_df[~deleted_future_user_df['movieId'].isin(list(future_movie))]
+
+        return deleted_future_item_df
     
 
     def _filter_rating_by_interaction(self, rating_df, min, max):
@@ -57,20 +62,20 @@ class PreprocessingData:
         group_user_minmax = group_user[(group_user['movieId'] >= min) & (group_user['movieId'] <= max)]
         
         filtered_df = rating_df[rating_df['userId'].isin(list(group_user_minmax['userId'].unique()))]
-        
+
         return filtered_df
     
 
     def _process_data(self):
         rating_df, movie_df = self._load_ratings_data()
         
-        deleted_nan_rating_df, filtered_movie_df = self._delete_rating_by_nanmovie(rating_df, movie_df)
+        deleted_nan_rating_df, filtered_movie_df = self._delete_rating_by_nanitem(rating_df, movie_df)
 
         positive_df = deleted_nan_rating_df[deleted_nan_rating_df['rating'] >= self.threshold].copy()
 
-        deleted_old_df = self._delete_rating_by_time(positive_df, self.timestamp)
+        deleted_future_item_df = self._delete_rating_by_futures(positive_df, filtered_movie_df, self.timestamp)
 
-        filtered_df = self._filter_rating_by_interaction(deleted_old_df, 10, 100)
+        filtered_df = self._filter_rating_by_interaction(deleted_future_item_df, 10, 100)
         filtered_df['newUserId'] = pd.factorize(filtered_df['userId'])[0]
         filtered_df['newItemId'] = pd.factorize(filtered_df['movieId'])[0]
 
@@ -82,14 +87,12 @@ class PreprocessingData:
         
         train_df = filtered_df[filtered_df['timestamp'] < self.timestamp]
         test_df = filtered_df[filtered_df['timestamp'] >= self.timestamp]
-        
+
         return train_df, test_df, filtered_movie_df
     
 
-    def _extract_colditem(self, rating_df, movie_df):
-        release_year = int(self.timestamp[:4])-1
-        
-        new_item_movieId = movie_df[movie_df['year'] == release_year]['movieId'].unique()
+    def _extract_colditem(self, rating_df, movie_df):        
+        new_item_movieId = movie_df[movie_df['year'] == self.release_date]['movieId'].unique()
         new_item_rating_df = rating_df[rating_df['movieId'].isin(list(new_item_movieId))]
         new_item_rating_group = new_item_rating_df.groupby('movieId')['userId'].count().reset_index()
         
