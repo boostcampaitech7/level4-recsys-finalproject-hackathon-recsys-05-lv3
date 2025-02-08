@@ -74,7 +74,6 @@ def UniformSample_popular(dataset, popular_items):
     dataset : BasicDataset
     user_num = dataset.trainDataSize
     users = np.random.randint(0, dataset.n_users, user_num)
-
     allPos = dataset.allPos
     S = []
     for i, user in enumerate(users):
@@ -89,9 +88,7 @@ def UniformSample_popular(dataset, popular_items):
                 continue
             else:
                 break
-
         S.append([user, positem, negitem])
-    
     return np.array(S)
 
 # ===================end samplers==========================
