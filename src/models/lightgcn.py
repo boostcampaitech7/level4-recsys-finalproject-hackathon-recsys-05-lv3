@@ -178,9 +178,9 @@ class LightGCN(BasicModel):
             posEmb0 = pos_emb.detach()
             negEmb0 = neg_emb.detach()
             # Contrastive Loss 계산
-            loss_ssl = self.contrastive_loss(
+            loss_ssl = self.__contrastive_loss(
                 users_1, users_2, batch_size=self.ssl_batch_size
-            ) + self.contrastive_loss(items_1, items_2, self.ssl_batch_size)
+            ) + self.__contrastive_loss(items_1, items_2, self.ssl_batch_size)
 
         else:
             (users_emb, pos_emb, neg_emb, userEmb0, posEmb0, negEmb0) = (
@@ -207,7 +207,7 @@ class LightGCN(BasicModel):
 
         return loss + self.config["ssl_lambda"] * loss_ssl, reg_loss
 
-    def contrastive_loss(self, z1, z2, temperature=0.5, batch_size=1024):
+    def __contrastive_loss(self, z1, z2, temperature=0.5, batch_size=1024):
         """
         Contrastive Loss (InfoNCE Loss)
         - z1, z2: 두 개의 서로 다른 증강된 그래프에서 얻은 노드 임베딩
