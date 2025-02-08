@@ -64,11 +64,14 @@ class LightGCN(BasicModel):
         g = torch.sparse.FloatTensor(index.t(), values, size)
         return g
 
-    def degree_aware_edge_dropout(self, graph, keep_prob):
+    def degree_aware_edge_dropout(self, graph, keep_prob, threshold=10, max_drop_prob=0.5, min_drop_prob=0.2):
         """
         아이템의 차수(Degree)에 따라 Edge Drop 확률을 다르게 적용하는 함수.
         - graph: 원본 Sparse Graph
         - keep_prob: 전체 평균 Edge 유지 비율
+        - threshold: 특정 차수 이하인 경우 Edge Drop을 하지 않음.
+        - max_drop_prob: 최대 Drop 확률 (기본값 40%)
+        - min_drop_prob: 최소 Drop 확률 (기본값 10%)
         """
         device = graph.device
         # 아이템 차수(Degree) 계산
@@ -76,8 +79,10 @@ class LightGCN(BasicModel):
             device
         )  # 아이템(1) 차수 계산
         max_degree = item_degrees.max()
-        # 차수에 따라 Edge Drop 비율 조정 (최소 5% ~ 최대 20%)
-        item_drop_probs = 0.05 + (0.2 - 0.05) * (1 - (item_degrees / max_degree))
+
+        drop_base = min_drop_prob + (max_drop_prob - min_drop_prob) * (1 - (item_degrees / max_degree))
+        item_drop_probs = torch.where(item_degrees <= threshold, 0.0, drop_base)  # 차수가 threshold 이하인 경우 Drop 확률 0%
+
         # 엣지마다 Drop 확률 적용
         edge_mask = (
             torch.rand(graph._nnz(), device=device)
