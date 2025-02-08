@@ -222,14 +222,7 @@ class LightGCN(BasicModel):
         for i in range(0, num_nodes, batch_size):
             z1_batch = z1[i : i + batch_size]
             z2_batch = z2[i : i + batch_size]
-        #     between_sim = f(torch.matmul(z1_batch, z2.T))  # 작은 배치 단위로 연산
-        #     total_loss += torch.sum(
-        #         torch.log(pos_sim[i : i + batch_size] / torch.sum(between_sim, dim=1))
-        #     )
-
-        # # Contrastive Loss (InfoNCE)
-        # return -torch.mean(torch.log(pos_sim / torch.sum(between_sim, dim=1)))
-            between_sim = torch.matmul(z1_batch, z2_batch.T)  # 여전히 전체 z2 사용
+            between_sim = torch.matmul(z1_batch, z2_batch.T)
             neg_loss = torch.logsumexp(between_sim, dim=1)  # OOM 방지
 
             total_loss += torch.sum(torch.log(pos_sim[i:i+batch_size]) - neg_loss)
