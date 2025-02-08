@@ -18,15 +18,20 @@ except:
     sample_ext = False
 
 
-def UniformSample_original(dataset, neg_ratio = 1):
+def UniformSample_original(dataset, neg_sampling_strategy, popular_items=None, neg_ratio = 1):
     dataset : BasicDataset
     allPos = dataset.allPos
     start = time()
     if sample_ext:
         S = sampling.sample_negative(dataset.n_users, dataset.m_items,
                                      dataset.trainDataSize, allPos, neg_ratio)
-    else:
+    elif neg_sampling_strategy == "random":
         S = UniformSample_original_python(dataset)
+    elif neg_sampling_strategy == "popular":
+        S = UniformSample_popular(dataset, popular_items)
+    else:
+        raise ValueError(f"Invalid neg_sampling strategy: {neg_sampling_strategy}")
+    
     return S
 
 def UniformSample_original_python(dataset):
@@ -61,6 +66,32 @@ def UniformSample_original_python(dataset):
         end = time()
         sample_time1 += end - start
     total = time() - total_start
+    return np.array(S)
+
+
+def UniformSample_popular(dataset, popular_items):
+    """ 인기 아이템 기반 Negative Sampling """
+    dataset : BasicDataset
+    user_num = dataset.trainDataSize
+    users = np.random.randint(0, dataset.n_users, user_num)
+
+    allPos = dataset.allPos
+    S = []
+    for i, user in enumerate(users):
+        posForUser = allPos[user]
+        if len(posForUser) == 0:
+            continue
+        positem = np.random.choice(posForUser)
+
+        while True:
+            negitem = np.random.choice(popular_items)  # 인기 아이템 중 랜덤 선택
+            if negitem in posForUser:
+                continue
+            else:
+                break
+
+        S.append([user, positem, negitem])
+    
     return np.array(S)
 
 # ===================end samplers==========================

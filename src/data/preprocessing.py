@@ -14,9 +14,24 @@ class PreprocessingData:
         self.test_file = os.path.join(self.preprocessed_path, 'test.txt')
         self.cold_train_file = os.path.join(self.preprocessed_path, 'cold_train.txt')
         self.cold_test_file = os.path.join(self.preprocessed_path, 'cold_test.txt')
-
+        self.popular_items = self._get_popular_items()
         self._group_user_item()
  
+
+    def _get_popular_items(self, top_n=100):
+        item_counts = {}
+        with open(self.train_file, "r", encoding="utf-8") as f:
+            for line in f:
+                items = list(map(int, line.strip().split(" ")[1:]))
+                for item in items:
+                    if item in item_counts:
+                        item_counts[item] += 1
+                    else:
+                        item_counts[item] = 1
+        sorted_items = sorted(item_counts.items(), key=lambda x: x[1], reverse=True)
+        popular_items = [item[0] for item in sorted_items[:top_n]]
+        
+        return popular_items
 
     def _load_ratings_data(self):
         try:

@@ -5,6 +5,7 @@ from src.models import lightgcn
 import multiprocessing
 import src.lightgcn_utils.metrics as metric_module 
 
+
 METRIC_NAMES = {
     'precision': 'precision_at_k',
     'recall': 'recall_at_k',
@@ -20,13 +21,21 @@ class Trainer :
         self.model = model
         self.loss = loss
         self.w = w
-
+        self.neg_sampling_strategy = self.args.train["neg_sampling"]
+        self.popular_items = self.args.popular_items if hasattr(self.args, "popular_items") else []
+        self.neg_ratio = self.args.dataloader.neg_ratio
+        
     def train(self) : 
         self.model.train()
-    
         
         with utils.timer(name="Sample"):
-            S = utils.UniformSample_original(self.dataset, self.args.dataloader.neg_ratio)
+            S = utils.UniformSample_original(
+                self.dataset, 
+                self.neg_sampling_strategy, 
+                self.popular_items,  # "popular" 방식일 경우 필요
+                self.args.dataloader.neg_ratio,
+            )
+
         users = torch.Tensor(S[:, 0]).long()
         posItems = torch.Tensor(S[:, 1]).long()
         negItems = torch.Tensor(S[:, 2]).long()
@@ -34,9 +43,11 @@ class Trainer :
         users = users.to(self.args.device)
         posItems = posItems.to(self.args.device)
         negItems = negItems.to(self.args.device)
+
         users, posItems, negItems = utils.shuffle(users, posItems, negItems)
         total_batch = len(users) // self.args.dataloader['bpr_batch_size'] + 1
         aver_loss = 0.
+        
         for (batch_i,
             (batch_users,
             batch_pos,
@@ -48,14 +59,16 @@ class Trainer :
                 print(f'{batch_i} / {total_batch}')
             # 역전파
             cri = self.loss.predict(batch_users, batch_pos, batch_neg)
-
             aver_loss += cri
+
             if self.args.tensorboard:
                 self.w.add_scalar(f'BPRLoss/BPR', cri, self.args.train.epochs * int(len(users) / self.args.dataloader['bpr_batch_size']) 
                                   + batch_i)
+                
         aver_loss = aver_loss / total_batch
         time_info = utils.timer.dict()
         utils.timer.zero()
+
         return f"loss{aver_loss:.3f}-{time_info}", aver_loss
     
 
