@@ -170,7 +170,6 @@ class LightGCN(BasicModel):
             users_emb = users_1[users]
             pos_emb = items_1[pos]
             neg_emb = items_1[neg]
-            # ✅ `userEmb0`, `posEmb0`, `negEmb0` 추가하여 오류 방지
             userEmb0 = users_emb.detach()
             posEmb0 = pos_emb.detach()
             negEmb0 = neg_emb.detach()
