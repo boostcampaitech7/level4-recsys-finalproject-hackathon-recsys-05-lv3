@@ -120,7 +120,6 @@ class LightGCN(BasicModel):
         embs = [all_emb]
         if self.config["dropout"] or dropped:
             if self.training:
-                print("droping")
                 g_droped = self.__dropout(self.keep_prob)
             else:
                 g_droped = self.Graph
