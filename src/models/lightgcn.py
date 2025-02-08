@@ -70,7 +70,7 @@ class LightGCN(BasicModel):
         - graph: 원본 Sparse Graph
         - keep_prob: 전체 평균 Edge 유지 비율
         - threshold: 특정 차수 이하인 경우 Edge Drop을 하지 않음.
-        - max_drop_prob: 최대 Drop 확률 (기본값 40%)
+        - max_drop_prob: 최대 Drop 확률 (기본값 50%)
         - min_drop_prob: 최소 Drop 확률 (기본값 10%)
         """
         device = graph.device
