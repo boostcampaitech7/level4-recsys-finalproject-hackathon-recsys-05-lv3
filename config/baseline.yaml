@@ -9,7 +9,7 @@ memo:
 seed: 0         # 시드 고정
 device: cuda    # 가능한 값 : cpu, cuda, mps
 model: LightGCN       # 모델 선택
-model_experiment_name : 'None'  # 로컬에 저장될 이름
+model_experiment_name : 'cold_item_baseline'  # 로컬에 저장될 이름
 
 wandb: True                            # wandb 사용 여부
 wandb_project: 'None'               # wandb 프로젝트 이름
