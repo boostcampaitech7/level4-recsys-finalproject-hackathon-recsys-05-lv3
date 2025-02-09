@@ -44,7 +44,7 @@ class BPRLossWithReg:
         optimizer_class = getattr(optim, self.config.type)
         self.opt = optimizer_class(recmodel.parameters(), lr=self.lr)
 
-        self.similarity_matrix = self.compute_similarity_matrix(self.model.embedding_item.weight).detach().cpu()
+        self.similarity_matrix = self._compute_similarity_matrix(self.model.embedding_item.weight).detach().cpu()
 
     def predict(self, users, pos, neg):
         """
@@ -53,7 +53,7 @@ class BPRLossWithReg:
         loss, reg_loss = self.model.bpr_loss(users, pos, neg)
         reg_loss = reg_loss * self.weight_decay
 
-        graph_reg_loss = self.graph_regularization_loss(self.model)
+        graph_reg_loss = self._graph_regularization_loss(self.model)
         graph_reg_loss = graph_reg_loss * self.reg_weight
 
         total_loss = loss + reg_loss + graph_reg_loss
@@ -64,7 +64,7 @@ class BPRLossWithReg:
 
         return total_loss.cpu().item()
 
-    def graph_regularization_loss(self, model, batch_size=128):
+    def _graph_regularization_loss(self, model, batch_size=128):
         """
         Graph Regularization Loss 계산 (메모리 최적화 버전).
         """
@@ -82,7 +82,7 @@ class BPRLossWithReg:
         return reg_loss
 
 
-    def compute_similarity_matrix(self, embeddings, threshold=0.1):
+    def _compute_similarity_matrix(self, embeddings, threshold=0.1):
         """
         Cosine Similarity 기반으로 아이템 간 유사도 행렬 계산 (Sparse 적용).
         """
