@@ -14,8 +14,8 @@ class PreprocessingData:
         self.test_file = os.path.join(self.preprocessed_path, 'test.txt')
         self.cold_train_file = os.path.join(self.preprocessed_path, 'cold_train.txt')
         self.cold_test_file = os.path.join(self.preprocessed_path, 'cold_test.txt')
-        self.popular_items = self._get_popular_items()
         self._group_user_item()
+        self.popular_items = self._get_popular_items()
  
 
     def _get_popular_items(self, top_n=100):
@@ -28,9 +28,10 @@ class PreprocessingData:
                         item_counts[item] += 1
                     else:
                         item_counts[item] = 1
+        
         sorted_items = sorted(item_counts.items(), key=lambda x: x[1], reverse=True)
         popular_items = [item[0] for item in sorted_items[:top_n]]
-        
+        print(f"상위 {top_n}개 인기 아이템: {popular_items}")
         return popular_items
 
     def _load_ratings_data(self):

@@ -35,7 +35,7 @@ class Trainer :
                 self.popular_items,  # "popular" 방식일 경우 필요
                 self.args.dataloader.neg_ratio,
             )
-
+        print("Negative Sampling Complete")
         users = torch.Tensor(S[:, 0]).long()
         posItems = torch.Tensor(S[:, 1]).long()
         negItems = torch.Tensor(S[:, 2]).long()

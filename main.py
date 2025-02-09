@@ -33,7 +33,7 @@ def main(args) :
     
     preprocessing = PreprocessingData(args)
     args.popular_items = preprocessing.popular_items
-    print(f"Loaded {len(args.dataset.popular_items)} popular items.")
+    print(f"Loaded {len(args.popular_items)} popular items.")
 
     utils.set_seed(args.seed)
     print(">>SEED:", args.seed)

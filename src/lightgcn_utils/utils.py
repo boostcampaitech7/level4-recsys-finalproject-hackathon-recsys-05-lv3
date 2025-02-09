@@ -75,21 +75,30 @@ def UniformSample_popular(dataset, popular_items):
     user_num = dataset.trainDataSize
     users = np.random.randint(0, dataset.n_users, user_num)
     allPos = dataset.allPos
-    S = []
+    popular_set = set(popular_items)
+    candidate_cache = {}
+    samples = []
     for i, user in enumerate(users):
         posForUser = allPos[user]
         if len(posForUser) == 0:
             continue
         positem = np.random.choice(posForUser)
+        if user in candidate_cache:
+            candidates = candidate_cache[user]
+        else:
+            posForUser_set = set(posForUser)
 
-        while True:
-            negitem = np.random.choice(popular_items)  # 인기 아이템 중 랜덤 선택
-            if negitem in posForUser:
-                continue
-            else:
-                break
-        S.append([user, positem, negitem])
-    return np.array(S)
+            candidates = list(popular_set - posForUser_set)
+            candidate_cache[user] = candidates
+        
+        if candidates:
+            negitem = np.random.choice(candidates)
+        else:
+            negitem = np.random.choice(list(popular_set))
+        
+        samples.append([user, positem, negitem])
+    
+    return np.array(samples)
 
 # ===================end samplers==========================
 # =====================utils====================================
