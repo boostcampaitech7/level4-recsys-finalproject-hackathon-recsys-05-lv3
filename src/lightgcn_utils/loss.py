@@ -69,7 +69,7 @@ class BPRLossWithReg:
         Graph Regularization Loss 계산 (메모리 최적화 버전).
         """
         item_embeddings = model.embedding_item.weight  
-        num_items, embedding_dim = item_embeddings.shape
+        num_items = item_embeddings.shape[0]
         reg_loss = torch.tensor(0.0, device="cuda")  
 
         for i in range(0, num_items, batch_size):
