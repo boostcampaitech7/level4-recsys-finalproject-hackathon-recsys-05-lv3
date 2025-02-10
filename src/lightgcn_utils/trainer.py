@@ -29,12 +29,7 @@ class Trainer :
         self.model.train()
         
         with utils.timer(name="Sample"):
-            S = utils.UniformSample_original(
-                self.dataset, 
-                self.neg_sampling_strategy, 
-                self.popular_items,  # "popular" 방식일 경우 필요
-                self.args.dataloader.neg_ratio,
-            )
+            S = utils.UniformSample_original(self.dataset)
         print("Negative Sampling Complete")
         users = torch.Tensor(S[:, 0]).long()
         posItems = torch.Tensor(S[:, 1]).long()

@@ -31,7 +31,6 @@ class PreprocessingData:
         
         sorted_items = sorted(item_counts.items(), key=lambda x: x[1], reverse=True)
         popular_items = [item[0] for item in sorted_items[:top_n]]
-        print(f"상위 {top_n}개 인기 아이템: {popular_items}")
         return popular_items
 
     def _load_ratings_data(self):

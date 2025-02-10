@@ -81,6 +81,8 @@ class Loader(BasicDataset):
         self.traindataSize = 0
         self.testDataSize = 0
         self.device = config.device
+        self.neg_sampling_strategy = config.train["neg_sampling"]
+        self.popular_items = config.popular_items if hasattr(config, "popular_items") else None
 
         # train
         with open(train_file, "r", encoding="utf-8") as f:

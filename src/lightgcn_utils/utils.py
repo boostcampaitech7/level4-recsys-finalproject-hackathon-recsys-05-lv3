@@ -18,19 +18,19 @@ except:
     sample_ext = False
 
 
-def UniformSample_original(dataset, neg_sampling_strategy, popular_items=None, neg_ratio = 1):
+def UniformSample_original(dataset, neg_ratio = 1):
     dataset : BasicDataset
     allPos = dataset.allPos
     start = time()
     if sample_ext:
         S = sampling.sample_negative(dataset.n_users, dataset.m_items,
                                      dataset.trainDataSize, allPos, neg_ratio)
-    elif neg_sampling_strategy == "random":
+    elif dataset.neg_sampling_strategy == "random":
         S = UniformSample_original_python(dataset)
-    elif neg_sampling_strategy == "popular":
-        S = UniformSample_popular(dataset, popular_items)
+    elif dataset.neg_sampling_strategy == "popular":
+        S = UniformSample_popular(dataset)
     else:
-        raise ValueError(f"Invalid neg_sampling strategy: {neg_sampling_strategy}")
+        raise ValueError(f"Invalid neg_sampling strategy: {dataset.neg_sampling_strategy}")
     
     return S
 
@@ -69,33 +69,26 @@ def UniformSample_original_python(dataset):
     return np.array(S)
 
 
-def UniformSample_popular(dataset, popular_items):
+def UniformSample_popular(dataset):
     """ 인기 아이템 기반 Negative Sampling """
     dataset : BasicDataset
     user_num = dataset.trainDataSize
     users = np.random.randint(0, dataset.n_users, user_num)
     allPos = dataset.allPos
-    popular_set = set(popular_items)
-    candidate_cache = {}
+    popular_set = set(dataset.popular_items)
+    
     samples = []
     for i, user in enumerate(users):
         posForUser = allPos[user]
         if len(posForUser) == 0:
             continue
-        positem = np.random.choice(posForUser)
-        if user in candidate_cache:
-            candidates = candidate_cache[user]
-        else:
-            posForUser_set = set(posForUser)
 
-            candidates = list(popular_set - posForUser_set)
-            candidate_cache[user] = candidates
-        
-        if candidates:
-            negitem = np.random.choice(candidates)
-        else:
-            negitem = np.random.choice(list(popular_set))
-        
+        positem = np.random.choice(posForUser)
+        posForUser_set = set(posForUser)
+        candidates = list(popular_set - posForUser_set)
+
+        negitem = np.random.choice(candidates) if candidates else np.random.choice(list(popular_set))
+
         samples.append([user, positem, negitem])
     
     return np.array(samples)
