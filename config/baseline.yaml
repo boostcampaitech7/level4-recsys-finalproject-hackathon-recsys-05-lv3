@@ -9,11 +9,11 @@ memo:
 seed: 0         # 시드 고정
 device: cuda    # 가능한 값 : cpu, cuda, mps
 model: LightGCN       # 모델 선택
-model_experiment_name : 'cold_item_baseline'  # 로컬에 저장될 이름
+model_experiment_name : 'sample'  # 로컬에 저장될 이름
 
 wandb: True                            # wandb 사용 여부
-wandb_project: 'None'               # wandb 프로젝트 이름
-wandb_experiment_name: 'None'            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
+wandb_project: 'sample'               # wandb 프로젝트 이름
+wandb_experiment_name: 'sample1'            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
 
 tensorboard: True
 
@@ -43,6 +43,7 @@ dataset :
   data_dir : data/
   data : MovieLens32M
   preprocess_dir : /preprocessed
+  popular_items : []
 
 dataloader:
     n_fold : 100
@@ -69,7 +70,8 @@ metrics: ["recall", "ndcg", "mrr", "hr"]  # 원하는 지표 리스트
 topks : [20]                         # k 에 대한 value  20이면 k = 20, 지표가  여러개 나옴.
 
 train:
-    epochs: 30                           # 학습 에폭 수
-    resume: False                       # 이어서 학습할 경우 True
-    save_interval: 10                   # 몇 에폭마다 모델 저장할지
-    show_interval: 50                    # 몇 에폭마다 보일지
+    epochs: 30                        # 학습 에폭 수
+    resume: False                     # 이어서 학습할 경우 True
+    save_interval: 5                 # 몇 에폭마다 모델 저장할지
+    show_interval: 50                 # 몇 에폭마다 보일지
+    neg_sampling: "popular"           # "random" or "popular"
