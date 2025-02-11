@@ -31,10 +31,13 @@ def main(args) :
     if not os.path.exists(args.FILE_PATH):
         os.makedirs(args.FILE_PATH, exist_ok=True)
     
-    PreprocessingData(args)
+    preprocessing = PreprocessingData(args)
+    args.popular_items = preprocessing.popular_items
+    print(f"Loaded {len(args.popular_items)} popular items.")
 
     utils.set_seed(args.seed)
     print(">>SEED:", args.seed)
+
 
     dataset = dataloader.Loader(args,path="./data/"+args.dataset.data+args.dataset.preprocess_dir)
 

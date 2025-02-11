@@ -38,3 +38,6 @@ data/*
 !data/.
 
 outputs/*
+
+boost/
+*.log
