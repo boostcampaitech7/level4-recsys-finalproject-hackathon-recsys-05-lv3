@@ -37,8 +37,8 @@ class BPRLossWithReg:
     def __init__(self, recmodel, args):
         self.config = args.optimizer
         self.model = recmodel
-        self.weight_decay = self.config.args.get('weight_decay', 0.000001)
-        self.reg_weight = self.config.args.get('reg_weight', 0.000001) 
+        self.weight_decay = self.config.args['weight_decay'] 
+        self.reg_weight = self.config.args['reg_weight']
         self.lr = self.config.args['lr']
 
         optimizer_class = getattr(optim, self.config.type)
