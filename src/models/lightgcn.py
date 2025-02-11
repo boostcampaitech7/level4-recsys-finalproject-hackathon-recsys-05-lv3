@@ -41,28 +41,28 @@ class LightGCN(BasicModel):
             print('use NORMAL distribution initilizer')
             
             # 추가: pretrain이 0이지만, meta embedding을 적용할 경우
-            if self.config.get('use_meta_embedding', 0) == 1:
-                item_emb_path = self.config.get("item_emb_path", None)
+            if self.config['use_meta_embedding'] == True:
+                item_emb_path = self.config["item_emb_path"]
 
                 if item_emb_path:
                     print(f"🔹 Loading item meta data embeddings from {item_emb_path} (pretrain=0)")
-                    item_embeddings = np.load(item_emb_path)  # .npy 파일 로드
+                    item_embeddings = np.load(item_emb_path) 
                     self.embedding_item.weight.data.copy_(torch.tensor(item_embeddings, dtype=torch.float32))
                 else:
                     print("⚠ Warning: item_emb_path is not set, using default random embeddings.")
 
         else:
-            # ✅ pretrain=1일 경우 기존 방식 유지
+            # pretrain=1일 경우 기존 방식 유지
             self.embedding_user.weight.data.copy_(torch.from_numpy(self.config['user_emb']))
             
-            if self.config.get('use_meta_embedding', 0) == 0:
+            if self.config['use_meta_embedding'] == False:
                 print("🔹 Using default pre-trained item embeddings")
                 self.embedding_item.weight.data.copy_(torch.from_numpy(self.config['item_emb']))
             else:
-                item_emb_path = self.config.get("item_emb_path", None)
+                item_emb_path = self.config["item_emb_path"]
                 if item_emb_path:
                     print(f"🔹 Loading item meta data embeddings from {item_emb_path}")
-                    item_embeddings = np.load(item_emb_path)  # .npy 파일 로드
+                    item_embeddings = np.load(item_emb_path)
                     self.embedding_item.weight.data.copy_(torch.tensor(item_embeddings, dtype=torch.float32))
                 else:
                     print("⚠ Warning: item_emb_path is not set, using default random embeddings.")
