@@ -9,17 +9,17 @@ memo:
 seed: 0         # 시드 고정
 device: cuda    # 가능한 값 : cpu, cuda, mps
 model: LightGCN       # 모델 선택
-model_experiment_name : 'cold_item_baseline'  # 로컬에 저장될 이름
+model_experiment_name : 'sample'  # 로컬에 저장될 이름
 
 wandb: True                            # wandb 사용 여부
-wandb_project: 'bert_embedding'               # wandb 프로젝트 이름
-wandb_experiment_name: 'bert_pca'            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
+wandb_project: 'sample'               # wandb 프로젝트 이름
+wandb_experiment_name: 'sample1'            # wandb 실행 이름. 빈 문자열일 경우 자동 생성
 
 tensorboard: True
 
 model_args:
     LightGCN:
-        latent_dim_rec: 256               # the embedding size of lightGCN
+        latent_dim_rec: 64              # the embedding size of lightGCN
         n_layers: 3                 # the layer num of lightGCN
         dropout: 0               # using the dropout or not (0 or 1)
         keep_prob : 0.6
@@ -27,8 +27,6 @@ model_args:
         pretrain: 0              # whether to use pretrained weights (0 or 1)
         A_split : True
         bigdata : True
-        use_meta_embedding: 1  # 1이면 item meta data 임베딩 사용, 0이면 기존 item_emb 사용
-        item_emb_path : "data/MovieLens32M/preprocessed/filtered_bert_embedding_pca.npy"
     CLCRec:
         latent_dim_rec: 64               # the embedding size of lightGCN
         n_layers: 3                 # the layer num of lightGCN
@@ -45,6 +43,7 @@ dataset :
   data_dir : data/
   data : MovieLens32M
   preprocess_dir : /preprocessed
+  popular_items : []
 
 dataloader:
     n_fold : 100
@@ -57,7 +56,7 @@ dataloader:
     timestamp: "2017-01-01"
 
 
-loss: BPRLoss          # 직접 정의한 loss 클래스 또는 torch.nn.Module 클래스 (https://pytorch.org/docs/stable/nn.html#loss-functions)
+loss: BPRLoss          # BPRLoss, BPRLossWithReg
 
 optimizer:
     type: Adam      # 사용가능한 optimizer: torch.optim.Optimizer 클래스 (https://pytorch.org/docs/stable/optim.html#algorithms)
@@ -71,7 +70,9 @@ metrics: ["recall", "ndcg", "mrr", "hr"]  # 원하는 지표 리스트
 topks : [20]                         # k 에 대한 value  20이면 k = 20, 지표가  여러개 나옴.
 
 train:
-    epochs: 10                           # 학습 에폭 수
-    resume: False                       # 이어서 학습할 경우 True
-    save_interval: 1                   # 몇 에폭마다 모델 저장할지
-    show_interval: 5                    # 몇 에폭마다 보일지
+    epochs: 30                        # 학습 에폭 수
+    resume: False                     # 이어서 학습할 경우 True
+    save_interval: 5                 # 몇 에폭마다 모델 저장할지
+    show_interval: 50                 # 몇 에폭마다 보일지
+    neg_sampling: "popular"           # "random" or "popular"
+
