@@ -1,6 +1,7 @@
 import torch
 from src.data.dataloader import BasicDataset
 from torch import nn
+import numpy as np
 
 
 class BasicModel(nn.Module):

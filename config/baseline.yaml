@@ -19,7 +19,7 @@ tensorboard: True
 
 model_args:
     LightGCN:
-        latent_dim_rec: 64              # the embedding size of lightGCN
+        latent_dim_rec: 64              # the embedding size of lightGCN:64, bert_meta:256
         n_layers: 3                 # the layer num of lightGCN
         dropout: 0               # using the dropout or not (0 or 1)
         keep_prob : 0.6
@@ -27,7 +27,7 @@ model_args:
         pretrain: 0              # whether to use pretrained weights (0 or 1)
         A_split : True
         bigdata : True
-        use_meta_embedding: True  # True: item meta data 임베딩 사용, False: 기존 item_emb 사용
+        use_meta_embedding: False  # True: item meta data 임베딩 사용, False: 기존 item_emb 사용
         item_emb_path : "data/MovieLens32M/preprocessed/filtered_bert_embedding_pca.npy"
         use_ssl : False
         ssl_lambda : 0.1 # Contrastive Loss 가중치 (기본값 0.1)
