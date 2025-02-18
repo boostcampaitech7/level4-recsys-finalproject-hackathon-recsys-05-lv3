@@ -14,7 +14,7 @@ from omegaconf import OmegaConf
 from src import utils, wandblogger
 import src.models as model_module
 from src.data import dataloader
-from src.data.preprocessing import PreprocessingData
+from src.data.preprocessing import ML32M_PreprocessingData, ML1M_PreprocessingData
 from src.lightgcn_utils.trainer import Trainer
 import src.lightgcn_utils.loss as loss_module
 
@@ -30,8 +30,13 @@ def main(args) :
 
     if not os.path.exists(args.FILE_PATH):
         os.makedirs(args.FILE_PATH, exist_ok=True)
-    
-    preprocessing = PreprocessingData(args)
+
+    if args.dataset.data == "MovieLens32M":
+        preprocessing = ML32M_PreprocessingData(args)
+    else:
+        preprocessing = ML1M_PreprocessingData(args)
+    print("preprocessing done")
+
     args.popular_items = preprocessing.popular_items
     print(f"Loaded {len(args.popular_items)} popular items.")
 
