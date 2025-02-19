@@ -1,0 +1,38 @@
+title: "[Meeting minutes] [2025-01-00] 회의록 "
+
+body:
+  - type: input
+    id: subject
+    attributes:
+      label: 주제
+      description: 회의 주제를 적습니다.
+  - type: textarea
+    id: status
+    attributes:
+      label: 진행 상황
+      description: 프로젝트 진행 상황 및 업데이트 된 내용을 공유합니다.
+      value: |
+        **공지원**: 
+        김주은: 
+        류지훈: 
+        박세연: 
+        박재현: 
+        백상민: 
+        완료된 작업:
+        진행 중인 작업:
+  - type: textarea
+    id: agenda
+    attributes:
+      label: Agenda
+      description: 회의에서 논의 사항을 다룹니다.      
+  - type: textarea
+    id: problem
+    attributes:
+      label: 직면한 문제점 및 해결 방향
+      value: |
+        문제점:
+        해결 방법:
+  - type: textarea
+    id: add
+    attributes:
+      label: 추가로 다루어 보아야 할 사항

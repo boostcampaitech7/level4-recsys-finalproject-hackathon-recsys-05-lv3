@@ -1,0 +1,43 @@
+title: "[Ideas] [2025-01-00] 아이디어 제안 "
+labels: "새로운 아이디어를 제안할 때 사용합니다."
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 아이디어 제안하기
+        이 템플릿을 따라 아이디어를 제안해주세요.
+  - type: input
+    id: idea-title
+    attributes:
+      label: 아이디어 제목
+      description: 아이디어의 간략하고 명확한 제목을 작성해주세요.
+      placeholder: "예: 새로운 기능 추가"
+    validations:
+      required: true
+  - type: textarea
+    id: idea-description
+    attributes:
+      label: 아이디어 설명
+      description: 아이디어에 대한 자세한 설명을 작성해주세요. 문제점, 해결 방안, 예상 효과 등을 포함하면 좋습니다.
+      placeholder: "아이디어에 대한 구체적인 내용을 작성해주세요."
+    validations:
+      required: true
+  - type: textarea
+    id: expected-benefits
+    attributes:
+      label: 예상 효과
+      description: 이 아이디어가 구현되었을 때 예상되는 긍정적인 효과를 작성해주세요.
+      placeholder: "예: 사용자 경험 향상, 성능 개선 등"
+  - type: textarea
+    id: alternative-solutions
+    attributes:
+      label: 대안
+      description: 이 아이디어 외에 고려해볼 만한 대안이 있다면 작성해주세요.
+      placeholder: "예: 다른 라이브러리 사용, 기존 기능 수정 등 (선택적)"
+  - type: textarea
+    id: references
+    attributes:
+      label: 참고 자료
+      description: 참고할 수 있는 문서나 링크를 입력해주세요 (선택 사항).
+      placeholder: "링크나 관련 자료를 추가하세요."

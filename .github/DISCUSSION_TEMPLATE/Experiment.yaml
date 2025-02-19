@@ -1,0 +1,64 @@
+title: "[Experiments] [2025-01-00] 실험 템플릿 "
+labels: "experiment, ongoing"
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🧪 실험 템플릿
+
+  - type: input
+    id: experiment_name
+    attributes:
+      label: 실험 이름
+
+  - type: input
+    id: author
+    attributes:
+      label: 작성자
+
+  - type: textarea
+    id: background
+    attributes:
+      label: 배경 및 목적
+
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: 가설
+
+  - type: textarea
+    id: experiment_design
+    attributes:
+      label: 실험 설계
+      placeholder: |
+        - 데이터셋: 
+        - 모델:
+        - 평가 지표: 
+
+  - type: textarea
+    id: experiment_schedule
+    attributes:
+      label: 실험 일정
+
+  - type: textarea
+    id: results
+    attributes:
+      label: 실험 결과
+
+  - type: textarea
+    id: conclusion
+    attributes:
+      label: 결론 및 인사이트
+
+  - type: textarea
+    id: todo
+    attributes:
+      label: 다음 단계
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### 참고 사항
+        - 실험 진행 중 주요 변경 사항이 발생하면 댓글로 업데이트를 남겨주세요.
