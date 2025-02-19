@@ -21,7 +21,6 @@ class Trainer :
         self.model = model
         self.loss = loss
         self.w = w
-        self.neg_sampling_strategy = self.args.train["neg_sampling"]
         self.popular_items = self.args.popular_items if hasattr(self.args, "popular_items") else []
         self.neg_ratio = self.args.dataloader.neg_ratio
         
@@ -29,7 +28,7 @@ class Trainer :
         self.model.train()
         
         with utils.timer(name="Sample"):
-            S = utils.UniformSample_original(self.dataset)
+            S = utils.Negative_Sampling(self.dataset)
         print("Negative Sampling Complete")
         users = torch.Tensor(S[:, 0]).long()
         posItems = torch.Tensor(S[:, 1]).long()
