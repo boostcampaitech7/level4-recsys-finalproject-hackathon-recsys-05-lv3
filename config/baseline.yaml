@@ -59,7 +59,7 @@ dataloader:
     test_cold_batch_size : 32
     neg_ratio : 1
     threshold: 4
-    timestamp: "2017-01-01"
+    timestamp: "2000-10-01"   # 32M : "2017-01-01" / 1M : "2000-10-01"
 
 
 loss: BPRLoss          # BPRLoss, BPRLossWithReg
@@ -81,5 +81,5 @@ train:
     resume: False                     # 이어서 학습할 경우 True
     save_interval: 5                 # 몇 에폭마다 모델 저장할지
     show_interval: 50                 # 몇 에폭마다 보일지
-    neg_sampling: "popular"           # "random" or "popular"
+    neg_sampling: "cold"           # "random" or "popular" or "cold"
 
