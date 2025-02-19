@@ -5,41 +5,33 @@ from time import time
 import os
 
 
-try:
-    from cppimport import imp_from_filepath
-    import sys
-    sys.path.append('src/data')
-    sampling = imp_from_filepath('src/data/sampling.cpp')
-    sampling.seed(42)
-    sample_ext = True
-    print("Cpp extension loaded")
-except:
-    print("Cpp extension not loaded")
-    sample_ext = False
-
-
-def UniformSample_original(dataset, neg_ratio = 1):
+def Negative_Sampling(dataset, neg_ratio = 1):
     dataset : BasicDataset
     allPos = dataset.allPos
     start = time()
-    if sample_ext:
-        S = sampling.sample_negative(dataset.n_users, dataset.m_items,
-                                     dataset.trainDataSize, allPos, neg_ratio)
+    if dataset.neg_sampling_strategy == "popular":
+        S = Sampling_by_popular(dataset)
+    elif dataset.neg_sampling_strategy == "cold":
+        S = Sampling_by_cold(dataset)
     elif dataset.neg_sampling_strategy == "random":
-        S = UniformSample_original_python(dataset)
-    elif dataset.neg_sampling_strategy == "popular":
-        S = UniformSample_popular(dataset)
+        try:
+            from cppimport import imp_from_filepath
+            import sys
+            sys.path.append('src/data')
+            sampling = imp_from_filepath('src/data/sampling.cpp')
+            sampling.seed(42)
+            S = sampling.sample_negative(dataset.n_users, dataset.m_items,dataset.trainDataSize, allPos, neg_ratio)
+            print("Cpp extension loaded")
+        except:
+            print("Cpp extension not loaded")
+            S = Sampling_randomly(dataset)
     else:
         raise ValueError(f"Invalid neg_sampling strategy: {dataset.neg_sampling_strategy}")
     
     return S
 
-def UniformSample_original_python(dataset):
-    """
-    the original impliment of BPR Sampling in LightGCN
-    :return:
-        np.array
-    """
+
+def Sampling_randomly(dataset):
     total_start = time()
     dataset : BasicDataset
     user_num = dataset.trainDataSize
@@ -69,7 +61,7 @@ def UniformSample_original_python(dataset):
     return np.array(S)
 
 
-def UniformSample_popular(dataset):
+def Sampling_by_popular(dataset):
     """ 인기 아이템 기반 Negative Sampling """
     dataset : BasicDataset
     user_num = dataset.trainDataSize
@@ -92,6 +84,41 @@ def UniformSample_popular(dataset):
         samples.append([user, positem, negitem])
     
     return np.array(samples)
+
+
+def Sampling_by_cold(dataset, prob_cold=0.3):
+    """
+    콜드 아이템을 네거티브로 뽑을 확률(prob_cold)를 높이는 샘플러
+    """
+    cold_items = set(dataset.coldItem)
+
+    total_start = time()
+    user_num = dataset.trainDataSize
+    users = np.random.randint(0, dataset.n_users, user_num)
+    allPos = dataset.allPos
+    S = []
+    for user in users:
+        posForUser = allPos[user]
+        if len(posForUser) == 0:
+            continue
+        # Positive 아이템 하나 뽑기
+        positem = np.random.choice(posForUser)
+
+        # Negative 아이템 뽑기 (콜드 아이템에 가중치)
+        while True:
+            if np.random.rand() < prob_cold:
+                # 콜드 아이템 중 랜덤
+                negitem = np.random.choice(list(cold_items))
+            else:
+                # 전체 아이템 중 랜덤
+                negitem = np.random.randint(0, dataset.m_items)
+            
+            # 만약 그 아이템이 user의 Pos 리스트에 있다면 계속 다시 뽑기
+            if negitem not in posForUser:
+                break
+        S.append([user, positem, negitem])
+    return np.array(S)
+
 
 # ===================end samplers==========================
 # =====================utils====================================
