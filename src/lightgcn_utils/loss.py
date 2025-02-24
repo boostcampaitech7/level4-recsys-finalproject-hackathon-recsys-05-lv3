@@ -23,9 +23,6 @@ class BPRLoss:
         else:
             loss, reg_loss = self.model.bpr_loss(users, pos, neg)
 
-            cold_items = set(cold_items['newItemId'])
-            loss, reg_loss = self.model.bpr_loss_cold_weight(users, pos, neg, cold_items, alpha=1)
-
         reg_loss = reg_loss * self.weight_decay
         loss = loss + reg_loss
 
