@@ -1,10 +1,8 @@
-<p align="center">
 
-  <h1> 🎞️ Cold-Start problem on your Recsys </h1>
+## 🎞️ Cold-Start problem on your Recsys </h1>
+이 프로젝트는 개발된 Recsys에서 발생할 수 있는 **콜드스타트 문제를 직접 정의 및 해결함**을 목표로 합니다.
 
-  이 프로젝트는 개발된 Recsys에서 발생할 수 있는 **콜드스타트 문제를 직접 정의 및 해결함**을 목표로 합니다.
 
-</p>
 
 <br>
 
@@ -23,12 +21,10 @@
 <br>
 
 ## 🛠️ 기술 스택 및 협업
-<div align="center">
   <img src="https://img.shields.io/badge/Python-3776AB?style=square&logo=Python&logoColor=white"/>&nbsp;
   <img src="https://img.shields.io/badge/Pandas-150458?style=square&logo=Pandas&logoColor=white"/>&nbsp;
   <img src="https://img.shields.io/badge/scikitlearn-F7931E?style=square&logo=scikitlearn&logoColor=white"/>&nbsp;
   <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=flat&logo=PyTorch&logoColor=white"/>&nbsp;
-
   <img src="https://img.shields.io/badge/Notion-000000?style=square&logo=Notion&logoColor=white"/>&nbsp;
   <img src="https://img.shields.io/badge/Slack-4A154B?style=flat-square&logo=Slack&logoColor=white"/>&nbsp;
 
