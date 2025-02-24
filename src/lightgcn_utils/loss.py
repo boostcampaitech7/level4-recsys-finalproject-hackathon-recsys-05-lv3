@@ -108,8 +108,6 @@ class BPRLoss_with_coldweight:
         self.args = args
 
     def predict(self, users, pos, neg):
-        loss, reg_loss = self.model.bpr_loss(users, pos, neg)
-
         cold_items = set(self.model.dataset.coldItem)
         loss, reg_loss = self.bpr_loss_cold_weight(users, pos, neg, cold_items, alpha=1)
 
