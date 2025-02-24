@@ -51,9 +51,6 @@ def leave_one_out(grouped: pd.DataFrame) -> Tuple[
     return train_data, test_data, cold_idx
 
 
-# timestamp 추가 필요
-
-
 def k_fold(
     grouped: pd.DataFrame, k: int = 5
 ) -> Tuple[List[Tuple[int, List[int]]], List[Tuple[int, List[int]]]]:
@@ -78,3 +75,4 @@ def k_fold(
             test_data.append((user_id, test_part))
 
     return train_data, test_data
+

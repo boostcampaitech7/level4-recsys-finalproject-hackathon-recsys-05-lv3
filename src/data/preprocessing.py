@@ -1,5 +1,6 @@
 import os
 import abc
+
 import pandas as pd
 
 
@@ -36,7 +37,7 @@ class BasePreprocessingData(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def _extract_colditem(self, train_df, movie_df):
         """
-        cold item 추출 로직을 자식 클래스가 구현
+        cold item 추출 로직은은 자식 클래스가 구현
         - MovieLens32M: (연(year) == release_date) & user 수 <= 10
         - MovieLens1M: (월(month) == release_date) (user count 필터 없음)
         """
@@ -202,3 +203,4 @@ class ML1M_PreprocessingData(BasePreprocessingData):
 
         new_item_ids = movie_df[movie_df['month'] == self.release_date]['movieId'].unique()
         return new_item_ids
+    

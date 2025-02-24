@@ -2,6 +2,7 @@ import numpy as np
 from src.data.dataloader import BasicDataset
 from sklearn.metrics import roc_auc_score
 
+
 def recall_at_k(test_data, r, k):
     """
     Recall@K
@@ -43,6 +44,7 @@ def ndcg_at_k(test_data,r,k):
     ndcg[np.isnan(ndcg)] = 0.
     return np.sum(ndcg)
 
+
 def auc(all_item_scores, dataset, test_data):
     """
         design for a single user
@@ -53,6 +55,7 @@ def auc(all_item_scores, dataset, test_data):
     r = r_all[all_item_scores >= 0]
     test_item_scores = all_item_scores[all_item_scores >= 0]
     return roc_auc_score(r, test_item_scores)
+
 
 def hit_rate_at_k(test_data, r, k):
     """
@@ -69,6 +72,7 @@ def hit_rate_at_k(test_data, r, k):
     hit_rate = np.mean(hits)  # 전체 사용자 평균
     return hit_rate
 
+
 def mrr_at_k(test_data, r, k):
     """
     Mean Reciprocal Rank (MRR@K)
@@ -83,6 +87,7 @@ def mrr_at_k(test_data, r, k):
     rr = rr.max(axis=1)  # 가장 높은 Reciprocal Rank 값만 선택
     return np.mean(rr)  # 전체 평균 MRR 반환
 
+
 def get_label(test_data, predictions):
     labels = np.zeros_like(predictions, dtype=np.float32)
 
@@ -90,3 +95,4 @@ def get_label(test_data, predictions):
         labels[i] = np.isin(predictions[i], ground_truth).astype(np.float32)
 
     return labels
+

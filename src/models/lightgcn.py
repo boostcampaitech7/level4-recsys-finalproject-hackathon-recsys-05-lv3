@@ -1,7 +1,8 @@
-import torch
-from src.data.dataloader import BasicDataset
-from torch import nn
 import numpy as np
+import torch
+from torch import nn
+
+from src.data.dataloader import BasicDataset
 
 
 class BasicModel(nn.Module):
@@ -36,10 +37,6 @@ class LightGCN(BasicModel):
             num_embeddings=self.num_items, embedding_dim=self.latent_dim
         )
         if self.config["pretrain"] == 0:
-            #             nn.init.xavier_uniform_(self.embedding_user.weight, gain=1)
-            #             nn.init.xavier_uniform_(self.embedding_item.weight, gain=1)
-            #             print('use xavier initilizer')
-            # random normal init seems to be a better choice when lightGCN actually don't use any non-linear activation function
             nn.init.normal_(self.embedding_user.weight, std=0.1)
             nn.init.normal_(self.embedding_item.weight, std=0.1)
             print("use NORMAL distribution initilizer")
@@ -93,10 +90,10 @@ class LightGCN(BasicModel):
 
     def __degree_aware_edge_dropout(self, graph, keep_prob, threshold=10, max_drop_prob=0.5, min_drop_prob=0.2):
         """
-        아이템의 차수(Degree)에 따라 Edge Drop 확률을 다르게 적용하는 함수.
+        아이템의 차수(Degree)에 따라 Edge Drop 확률을 다르게 적용하는 함수
         - graph: 원본 Sparse Graph
         - keep_prob: 전체 평균 Edge 유지 비율
-        - threshold: 특정 차수 이하인 경우 Edge Drop을 하지 않음.
+        - threshold: 특정 차수 이하인 경우 Edge Drop을 하지 않음
         - max_drop_prob: 최대 Drop 확률 (기본값 50%)
         - min_drop_prob: 최소 Drop 확률 (기본값 10%)
         """
@@ -148,7 +145,6 @@ class LightGCN(BasicModel):
         users_emb = self.embedding_user.weight
         items_emb = self.embedding_item.weight
         all_emb = torch.cat([users_emb, items_emb])
-        #   torch.split(all_emb , [self.num_users, self.num_items])
         embs = [all_emb]
         if self.config["dropout"] or dropped:
             if self.training:
@@ -169,9 +165,9 @@ class LightGCN(BasicModel):
                 all_emb = torch.sparse.mm(g_droped, all_emb)
             embs.append(all_emb)
         embs = torch.stack(embs, dim=1)
-        # print(embs.size())
         light_out = torch.mean(embs, dim=1)
         users, items = torch.split(light_out, [self.num_users, self.num_items])
+        
         return users, items
 
     def getUsersRating(self, users):
@@ -179,6 +175,7 @@ class LightGCN(BasicModel):
         users_emb = all_users[users.long()]
         items_emb = all_items
         rating = self.f(torch.matmul(users_emb, items_emb.t()))
+
         return rating
 
     def getEmbedding(self, users, pos_items, neg_items):
@@ -193,8 +190,8 @@ class LightGCN(BasicModel):
         meta_emb = self.all_metas[items].to(self.device)
         meta_emb = self.metamodel(meta_emb.float()).to(self.device)
         item_emb = torch.cat([pos_emb_ego, neg_emb_ego], dim=0)
-        return users_emb, pos_emb, neg_emb, users_emb_ego, pos_emb_ego, neg_emb_ego, item_emb, meta_emb
 
+        return users_emb, pos_emb, neg_emb, users_emb_ego, pos_emb_ego, neg_emb_ego, item_emb, meta_emb
 
     def bpr_loss(self, users, pos, neg):
 
@@ -280,4 +277,6 @@ class MetaModel(nn.Module):
         x = self.bn1(x)
         x = self.fc2(x)
         x = self.bn2(x)
+
         return x
+    

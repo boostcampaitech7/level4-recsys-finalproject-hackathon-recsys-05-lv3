@@ -1,8 +1,9 @@
-from src.lightgcn_utils import utils
 import numpy as np
 import torch
-from src.models import lightgcn
 import multiprocessing
+
+from src.lightgcn_utils import utils
+from src.models import lightgcn
 import src.lightgcn_utils.metrics as metric_module 
 
 
@@ -65,8 +66,6 @@ class Trainer :
 
         return f"loss{aver_loss:.3f}-{time_info}", aver_loss
     
-
-
     def _test_one_batch(self,X):
         sorted_items = X[0].numpy()
         groundTrue = X[1]
@@ -100,8 +99,7 @@ class Trainer :
             users_list = []
             rating_list = []
             groundTrue_list = []
-            # auc_record = []
-            # ratings = []
+
             total_batch = len(users) // u_batch_size + 1
             for batch_users in utils.minibatch(self.args,users, batch_size=u_batch_size):
                 allPos = self.dataset.getUserPosItems(batch_users)
@@ -119,12 +117,6 @@ class Trainer :
                 rating[exclude_index, exclude_items] = -(1<<10)
                 _, rating_K = torch.topk(rating, k=max_K)
                 rating = rating.cpu().numpy()
-                # aucs = [ 
-                #         utils.AUC(rating[i],
-                #                   dataset, 
-                #                   test_data) for i, test_data in enumerate(groundTrue)
-                #     ]
-                # auc_record.extend(aucs)
                 del rating
                 users_list.append(batch_users)
                 rating_list.append(rating_K.cpu())
@@ -144,7 +136,6 @@ class Trainer :
             for metric in metrics:
                 results[metric] /= float(len(users))
 
-            # results['auc'] = np.mean(auc_record)
             if self.args.tensorboard:
                 for metric in metrics:
                     self.w.add_scalars(f"Test/{metric.capitalize()}@{self.args.topks}",
@@ -177,8 +168,6 @@ class Trainer :
                 users_list = []
                 rating_list = []
                 groundTrue_list = []
-                # auc_record = []
-                # ratings = []
 
                 if len(users) % u_batch_size == 0:
                     total_batch = len(users) // u_batch_size 
@@ -192,7 +181,6 @@ class Trainer :
                     batch_users_gpu = batch_users_gpu.to(self.args.device)
 
                     rating = self.model.getUsersRating(batch_users_gpu)
-                    #rating = rating.cpu()
                     exclude_index = []
                     exclude_items = []
                     for range_i, items in enumerate(allPos):
@@ -201,12 +189,7 @@ class Trainer :
                     rating[exclude_index, exclude_items] = -(1<<10)
                     _, rating_K = torch.topk(rating, k=max_K)
                     rating = rating.cpu().numpy()
-                    # aucs = [ 
-                    #         utils.AUC(rating[i],
-                    #                   dataset, 
-                    #                   test_data) for i, test_data in enumerate(groundTrue)
-                    #     ]
-                    # auc_record.extend(aucs)
+                    
                     del rating
                     users_list.append(batch_users)
                     rating_list.append(rating_K.cpu())
@@ -228,7 +211,6 @@ class Trainer :
                 for metric in metrics:
                     results[metric] /= float(len(users))
 
-                # results['auc'] = np.mean(auc_record)
                 if self.args.tensorboard:
                     for metric in metrics:
                         self.w.add_scalars(f"Test/{metric.capitalize()}@{self.args.topks}",
@@ -268,7 +250,6 @@ class Inference :
                 batch_users_gpu = batch_users_gpu.to(self.args.device)
 
                 rating = self.model.getUsersRating(batch_users_gpu)
-                #rating = rating.cpu()
                 exclude_index = []
                 exclude_items = []
                 for range_i, items in enumerate(allPos):
@@ -281,3 +262,4 @@ class Inference :
                 rating_list.append(rating_K.cpu())
         
         return np.array(users_list).reshape(-1,1), np.array(torch.cat(rating_list, dim=0))
+    
