@@ -18,6 +18,7 @@ class LightGCN(BasicModel):
 
         self.config = config.model_args
         self.dataset: BasicDataset = dataset
+        self.loss = config.loss
         self.__init_weight() 
 
     def __init_weight(self):
@@ -73,6 +74,11 @@ class LightGCN(BasicModel):
         self.f = nn.Sigmoid()
         self.Graph = self.dataset.getSparseGraph()
         print(f"LightGCN is already to go (dropout:{self.config['dropout']})")
+
+        if self.loss == 'BPRLoss_with_alignment_similarity':
+            self.all_metas = torch.from_numpy(np.load(item_emb_path))
+            self.metamodel = MetaModel(self.all_metas.shape[1], self.latent_dim)
+            print("Use meta model")
 
     def __dropout_x(self, x, keep_prob):
         size = x.size()
@@ -183,7 +189,12 @@ class LightGCN(BasicModel):
         users_emb_ego = self.embedding_user(users)
         pos_emb_ego = self.embedding_item(pos_items)
         neg_emb_ego = self.embedding_item(neg_items)
-        return users_emb, pos_emb, neg_emb, users_emb_ego, pos_emb_ego, neg_emb_ego
+        items = torch.cat([pos_items, neg_items], dim=0).to('cpu')
+        meta_emb = self.all_metas[items].to(self.device)
+        meta_emb = self.metamodel(meta_emb.float()).to(self.device)
+        item_emb = torch.cat([pos_emb_ego, neg_emb_ego], dim=0)
+        return users_emb, pos_emb, neg_emb, users_emb_ego, pos_emb_ego, neg_emb_ego, item_emb, meta_emb
+
 
     def bpr_loss(self, users, pos, neg):
 
@@ -204,7 +215,7 @@ class LightGCN(BasicModel):
             ) + self.__contrastive_loss(items_1, items_2, self.ssl_batch_size)
 
         else:
-            (users_emb, pos_emb, neg_emb, userEmb0, posEmb0, negEmb0) = (
+            (users_emb, pos_emb, neg_emb, userEmb0, posEmb0, negEmb0, item_emb, meta_emb) = (
                 self.getEmbedding(users.long(), pos.long(), neg.long())
             )
             loss_ssl = 0  # 기존 방식에서는 Contrastive Loss 없음
@@ -226,7 +237,10 @@ class LightGCN(BasicModel):
 
         loss = torch.mean(torch.nn.functional.softplus(neg_scores - pos_scores))
 
-        return loss + self.config["ssl_lambda"] * loss_ssl, reg_loss
+        if self.loss == 'BPRLoss_with_alignment_similarity':
+            return loss + self.config["ssl_lambda"] * loss_ssl, reg_loss, item_emb, meta_emb
+        else:
+            return loss + self.config["ssl_lambda"] * loss_ssl, reg_loss
 
     def __contrastive_loss(self, z1, z2, temperature=0.5, batch_size=1024):
         """
@@ -250,3 +264,20 @@ class LightGCN(BasicModel):
 
         return -total_loss / num_nodes
 
+
+class MetaModel(nn.Module):
+    def __init__(self, in_features, out_features):
+        super().__init__()
+        self.fc1 = nn.Linear(in_features=in_features, out_features=256)
+        self.act = nn.GELU()
+        self.bn1 = nn.BatchNorm1d(256)
+        self.fc2 = nn.Linear(in_features=256, out_features=out_features)
+        self.bn2 = nn.BatchNorm1d(out_features)
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.act(x)
+        x = self.bn1(x)
+        x = self.fc2(x)
+        x = self.bn2(x)
+        return x

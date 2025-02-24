@@ -23,9 +23,6 @@ class BPRLoss:
         else:
             loss, reg_loss = self.model.bpr_loss(users, pos, neg)
 
-            cold_items = set(cold_items['newItemId'])
-            loss, reg_loss = self.model.bpr_loss_cold_weight(users, pos, neg, cold_items, alpha=1)
-
         reg_loss = reg_loss * self.weight_decay
         loss = loss + reg_loss
 
@@ -108,8 +105,6 @@ class BPRLoss_with_coldweight:
         self.args = args
 
     def predict(self, users, pos, neg):
-        loss, reg_loss = self.model.bpr_loss(users, pos, neg)
-
         cold_items = set(self.model.dataset.coldItem)
         loss, reg_loss = self.bpr_loss_cold_weight(users, pos, neg, cold_items, alpha=1)
 
@@ -124,10 +119,10 @@ class BPRLoss_with_coldweight:
     
     def bpr_loss_cold_weight(self, users, pos, neg, cold_items, alpha=0.5):
         """
-        cold_items에 속한 pos item에 대해 추가 가중치 alpha를 부여여
+        cold_items에 속한 pos item에 대해 추가 가중치 alpha를 부여
         alpha=0.5라면, cold pos일 때 loss를 1.5배(기본 1 + alpha)로 만듦
         """
-        users_emb, pos_emb, neg_emb, userEmb0, posEmb0, negEmb0 = self.model.getEmbedding(users.long(), pos.long(), neg.long())
+        users_emb, pos_emb, neg_emb, userEmb0, posEmb0, negEmb0, _, _ = self.model.getEmbedding(users.long(), pos.long(), neg.long())
         
         reg_loss = (1/2)*(userEmb0.norm(2).pow(2) + 
                         posEmb0.norm(2).pow(2)  +
@@ -150,3 +145,36 @@ class BPRLoss_with_coldweight:
         loss = torch.mean(bpr_weighted)
 
         return loss, reg_loss
+    
+
+class BPRLoss_with_alignment_similarity:
+    def __init__(self, recmodel, args):
+        self.config = args.optimizer
+        self.model = recmodel
+        self.weight_decay = self.config.args["weight_decay"]
+        self.lr = self.config.args["lr"]
+        optimizer_class = getattr(optim, self.config.type)
+        self.opt = optimizer_class(self.model.parameters(), lr=self.lr)
+
+        self.args = args
+
+    def predict(self, users, pos, neg):
+        loss, reg_loss, item_emb, meta_emb = self.model.bpr_loss(users, pos, neg)
+        similarity_mean = self.alignment_similarity(item_emb, meta_emb)
+        reg_loss = reg_loss * self.weight_decay
+        loss = loss + reg_loss - 0.1*similarity_mean
+
+        self.opt.zero_grad()
+        loss.backward()
+        self.opt.step()
+
+        return loss.cpu().item()
+    
+    def alignment_similarity(item_emb, meta_emb):
+        similarity = torch.sum(item_emb * meta_emb, dim=1)
+        similarity = torch.sigmoid(similarity)
+        similarity_mean = torch.mean(similarity)
+
+        return similarity_mean
+    
+
