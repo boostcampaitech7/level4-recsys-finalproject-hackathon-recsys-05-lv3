@@ -1,0 +1,25 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+    -   id: trailing-whitespace                 # 각 줄 끝에 불필요한 공백을 제거
+    -   id: end-of-file-fixer                   # 파일 끝에 빈 줄을 추가하여 POSIX 규칙 준수
+    -   id: check-yaml                          # YAML 파일의 구문 오류를 검사
+    -   id: check-added-large-files             # 대용량 파일 커밋을 방지 (기본값: 500KB)
+        args: ["--maxkb=5120"]                  # 제한 크기: 5MB
+
+-   repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+    -   id: black                               # Python 코드 포매터
+        args: ["--line-length", "100"]          # 라인 길이 제한을 100자로 설정 (기본값: 88자)
+
+-   repo: https://github.com/pycqa/isort
+    rev: 6.0.0
+    hooks:
+    -   id: isort                               # import 정렬 도구
+
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+    -   id: mypy                                # Python 타입 검사 도구

@@ -1,0 +1,81 @@
+# config.yaml
+memo: 
+    cold start item baseline
+# 아래의 일곱 항목들은 argparser로 받은 인자를 우선적으로 사용합니다.
+#   $ python main.py --config config.yaml --seed 2024
+#   과 같이 실행할 경우 seed는 0이 아닌 2024로 설정됩니다.
+
+
+seed: 0                                 # 시드 고정
+device: cuda                            # device | cpu, cuda, mps
+model: LightGCN                         # 모델 선택 | LightGCN, CLCRec
+model_experiment_name : 'baseline'      # 로컬에 저장될 이름
+
+wandb: True                             # wandb 사용 여부
+wandb_project: 'baseline'               # wandb 프로젝트 이름
+wandb_experiment_name: 'baseline'       # wandb 실행 이름. 빈 문자열일 경우 자동 생성
+
+tensorboard: True
+
+model_args:
+    LightGCN:
+        latent_dim_rec: 64              # embedding size | lightGCN:64, bert_meta:256
+        n_layers: 3                     # layer num
+        dropout: 0                      # dropout 사용여부 | 0, 1
+        keep_prob : 0.6
+        multicore: 0                    # test 시 multiprocessing 사용여부 | 0, 1
+        pretrain: 0                     # pretrained weight 사용여부 | 0, 1
+        A_split : True
+        use_meta_embedding: False       # item meta embedding 사용여부 | True, False
+        item_emb_path : "data/MovieLens32M/preprocessed/filtered_bert_embedding_pca.npy"
+        use_ssl : False
+        ssl_lambda : 0.1                # contrastive loss 가중치 | 기본값:0.1
+        ssl_batch_size: 1024            # contrastive loss 계산 시 한 번에 연산할 크기
+
+    CLCRec:
+        latent_dim_rec: 64              # embedding size 
+        n_layers: 3                     # layer num
+        dropout: 0                      # dropout 사용여부 | 0, 1
+        keep_prob : 0.6
+        multicore: 0                    # test 시 multiprocessing 사용여부 | 0, 1
+        pretrain: 0                     # pretrained weight 사용여부 | 0, 1
+        A_split : True
+        tau: 0.5
+        contrastive_weight: 0.1
+        
+dataset :
+  data_dir : data/
+  data : MovieLens32M
+  preprocess_dir : /preprocessed
+  popular_items : []
+
+dataloader:
+    n_fold : 100
+    split : True
+    bpr_batch_size: 4096                # batch size
+    test_batch_size : 128
+    test_cold_batch_size : 32
+    neg_ratio : 1
+    threshold: 4
+    timestamp: "2000-10-01"             # new item threshold | 32M:"2017-01-01", 1M:"2000-10-01"
+
+loss: BPRLoss                           # loss function | BPRLoss, BPRLossWithReg, BPRLoss_with_coldweight, BPRLoss_with_alignment_similarity
+
+optimizer:
+    type: Adam                          # optimizer
+    args:                               # 사용하고자 하는 클래스의 파라미터를 참고하여 추가/ 관계가 없는 파라미터는 무시됨
+        lr: 0.001
+        weight_decay: 0.0001            # L2 정규화 가중치
+        reg_weight: 0.000001      
+        amsgrad: False                  # amsgrad 사용 여부
+
+metrics: ["recall", "ndcg", "mrr", "hr"]  # 원하는 지표 리스트
+
+topks : [20]                            # topk/ 여러 k 가능
+
+train:
+    epochs: 30                          # 학습 에폭 수
+    resume: False                       # 이어서 학습 | True, False
+    save_interval: 5                    # 모델 저장 주기
+    show_interval: 50                   # 에폭 print 주기
+    neg_sampling: "cold"                # negative sampling | "random", "popular", "cold"
