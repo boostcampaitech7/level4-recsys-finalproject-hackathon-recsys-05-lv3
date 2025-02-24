@@ -23,6 +23,9 @@ class BPRLoss:
         else:
             loss, reg_loss = self.model.bpr_loss(users, pos, neg)
 
+            cold_items = set(cold_items['newItemId'])
+            loss, reg_loss = self.model.bpr_loss_cold_weight(users, pos, neg, cold_items, alpha=1)
+
         reg_loss = reg_loss * self.weight_decay
         loss = loss + reg_loss
 
@@ -91,3 +94,59 @@ class BPRLossWithReg:
         similarity_matrix = torch.where(similarity_matrix > threshold, similarity_matrix, torch.tensor(0.0, device=similarity_matrix.device))
 
         return similarity_matrix
+
+
+class BPRLoss_with_coldweight:
+    def __init__(self, recmodel, args):
+        self.config = args.optimizer
+        self.model = recmodel
+        self.weight_decay = self.config.args["weight_decay"]
+        self.lr = self.config.args["lr"]
+        optimizer_class = getattr(optim, self.config.type)
+        self.opt = optimizer_class(self.model.parameters(), lr=self.lr)
+
+        self.args = args
+
+    def predict(self, users, pos, neg):
+        loss, reg_loss = self.model.bpr_loss(users, pos, neg)
+
+        cold_items = set(self.model.dataset.coldItem)
+        loss, reg_loss = self.bpr_loss_cold_weight(users, pos, neg, cold_items, alpha=1)
+
+        reg_loss = reg_loss * self.weight_decay
+        loss = loss + reg_loss
+
+        self.opt.zero_grad()
+        loss.backward()
+        self.opt.step()
+
+        return loss.cpu().item()
+    
+    def bpr_loss_cold_weight(self, users, pos, neg, cold_items, alpha=0.5):
+        """
+        cold_items에 속한 pos item에 대해 추가 가중치 alpha를 부여여
+        alpha=0.5라면, cold pos일 때 loss를 1.5배(기본 1 + alpha)로 만듦
+        """
+        users_emb, pos_emb, neg_emb, userEmb0, posEmb0, negEmb0 = self.model.getEmbedding(users.long(), pos.long(), neg.long())
+        
+        reg_loss = (1/2)*(userEmb0.norm(2).pow(2) + 
+                        posEmb0.norm(2).pow(2)  +
+                        negEmb0.norm(2).pow(2))/float(len(users))
+
+        pos_scores = torch.sum(users_emb * pos_emb, dim=1)  # (batch,)
+        neg_scores = torch.sum(users_emb * neg_emb, dim=1)  # (batch,)
+
+        bpr_raw = torch.nn.functional.softplus(neg_scores - pos_scores)  # (batch,)
+
+        pos_mask = torch.tensor(
+            [1.0 if p.item() in cold_items else 0.0 for p in pos],
+            dtype=torch.float,
+            device=pos.device
+        )
+
+        pos_factor = 1.0 + alpha * pos_mask
+        bpr_weighted = bpr_raw * pos_factor
+
+        loss = torch.mean(bpr_weighted)
+
+        return loss, reg_loss
