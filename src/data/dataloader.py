@@ -2,10 +2,10 @@ from os.path import join
 from time import time
 
 import numpy as np
-import scipy.sparse as sp
 import torch
-from scipy.sparse import csr_matrix
 from torch.utils.data import DataLoader, Dataset
+import scipy.sparse as sp
+from scipy.sparse import csr_matrix
 
 
 class BasicDataset(Dataset):
@@ -39,16 +39,10 @@ class BasicDataset(Dataset):
         raise NotImplementedError
 
     def getUserNegItems(self, users):
-        """
-        not necessary for large dataset
-        it's stupid to return all neg items in super large dataset
-        """
         raise NotImplementedError
 
     def getSparseGraph(self):
         """
-        build a graph in torch.sparse.IntTensor.
-        Details in NGCF's matrix form
         A =
             |I,   R|
             |R^T, I|
@@ -57,13 +51,7 @@ class BasicDataset(Dataset):
 
 
 class Loader(BasicDataset):
-    """
-    Dataset type for pytorch
-    Incldue graph information
-    """
-
     def __init__(self, config, path):
-        # train or test
         print(f"loading [{config.dataset.data}]")
         self.split = config.dataloader["split"]
         self.folds = config.dataloader["n_fold"]
@@ -131,7 +119,6 @@ class Loader(BasicDataset):
                     coldItem.extend(items)
         self.coldUser = np.array(coldUser)
         self.coldItem = np.array(coldItem)
-
 
         self.Graph = None
         print(f"{self.trainDataSize} interactions for training")
@@ -220,7 +207,6 @@ class Loader(BasicDataset):
                 adj_mat[: self.n_users, self.n_users :] = R
                 adj_mat[self.n_users :, : self.n_users] = R.T
                 adj_mat = adj_mat.todok()
-                # adj_mat = adj_mat + sp.eye(adj_mat.shape[0])
 
                 rowsum = np.array(adj_mat.sum(axis=1))
                 d_inv = np.power(rowsum, -0.5).flatten()
@@ -272,15 +258,6 @@ class Loader(BasicDataset):
         return cold_data
 
     def getUserItemFeedback(self, users, items):
-        """
-        users:
-            shape [-1]
-        items:
-            shape [-1]
-        return:
-            feedback [-1]
-        """
-        # print(self.UserItemNet[users, items])
         return np.array(self.UserItemNet[users, items]).astype("uint8").reshape((-1,))
 
     def getUserPosItems(self, users):
@@ -289,9 +266,4 @@ class Loader(BasicDataset):
             # 0이 아닌 요소들의 index를 뽑아서 append
             posItems.append(self.UserItemNet[user].nonzero()[1])
         return posItems
-
-    # def getUserNegItems(self, users):
-    #     negItems = []
-    #     for user in users:
-    #         negItems.append(self.allNeg[user])
-    #     return negItems
+    

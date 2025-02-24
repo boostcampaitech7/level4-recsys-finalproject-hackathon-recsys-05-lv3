@@ -1,8 +1,10 @@
-import torch
-import numpy as np
-from src.data.dataloader import BasicDataset
-from time import time
 import os
+
+import numpy as np
+import torch
+from time import time
+
+from src.data.dataloader import BasicDataset
 
 
 def Negative_Sampling(dataset, neg_ratio = 1):
@@ -148,7 +150,6 @@ def minibatch(args,*tensors, **kwargs):
         for i in range(0, len(tensors[0]), batch_size):
             yield tuple(x[i:i + batch_size] for x in tensors)
 
-
 def shuffle(*arrays, **kwargs):
 
     require_indices = kwargs.get('indices', False)
@@ -216,7 +217,6 @@ class timer:
                 kwargs['name']] if timer.NAMED_TAPE.get(kwargs['name']) else 0.
             self.named = kwargs['name']
             if kwargs.get("group"):
-                #TODO: add group function
                 pass
         else:
             self.named = False

@@ -92,7 +92,6 @@ def main(args) :
                 torch.save(Recmodel.state_dict(), weight_file)
                 print(f"Model saved at epoch {epoch+1}")
 
-            # if (epoch+1) % 10 == 0:
             print("[TEST]")
             results = trainer.test()
             results = {key: value.tolist() for key, value in results.items()}

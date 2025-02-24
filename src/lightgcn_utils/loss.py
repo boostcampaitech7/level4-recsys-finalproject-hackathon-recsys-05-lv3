@@ -1,7 +1,6 @@
 import torch
 import torch.optim as optim
 import torch.nn.functional as F
-import sys
 
 
 class BPRLoss:
@@ -12,7 +11,6 @@ class BPRLoss:
         self.lr = self.config.args["lr"]
         optimizer_class = getattr(optim, self.config.type)
         self.opt = optimizer_class(self.model.parameters(), lr=self.lr)
-        # self.opt = optim.Adam(recmodel.parameters(), lr=self.lr)
 
         self.args = args
 
@@ -32,6 +30,7 @@ class BPRLoss:
 
         return loss.cpu().item()
 
+
 class BPRLossWithReg:
     def __init__(self, recmodel, args):
         self.config = args.optimizer
@@ -47,7 +46,7 @@ class BPRLossWithReg:
 
     def predict(self, users, pos, neg):
         """
-        BPR Loss + Graph Regularization Loss 적용.
+        BPR Loss + Graph Regularization Loss 적용
         """
         loss, reg_loss = self.model.bpr_loss(users, pos, neg)
         reg_loss = reg_loss * self.weight_decay
@@ -65,7 +64,7 @@ class BPRLossWithReg:
 
     def _graph_regularization_loss(self, model, batch_size=128):
         """
-        Graph Regularization Loss 계산 (메모리 최적화 버전).
+        Graph Regularization Loss 계산 (메모리 최적화 버전)
         """
         item_embeddings = model.embedding_item.weight  
         num_items = item_embeddings.shape[0]
@@ -79,7 +78,6 @@ class BPRLossWithReg:
             reg_loss += torch.sum(similarity_batch * diff)
 
         return reg_loss
-
 
     def _compute_similarity_matrix(self, embeddings, threshold=0.1):
         """
@@ -177,4 +175,3 @@ class BPRLoss_with_alignment_similarity:
 
         return similarity_mean
     
-

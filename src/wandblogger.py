@@ -9,6 +9,7 @@ recbole.utils.wandblogger
 """
 import numpy as np
 
+
 class WandbLogger(object):
     """WandbLogger to log metrics to Weights and Biases."""
 
@@ -39,7 +40,6 @@ class WandbLogger(object):
                                 notes=self.config.memo if hasattr(self.config, 'memo') else None,
                                 tags=self.config.model, 
                                 )
-
             self._set_steps()
 
     def log_metrics(self, metrics, head="train", epoch = None, commit=True):
@@ -72,4 +72,7 @@ class WandbLogger(object):
             else :
                 topk = self.config.topks[0] 
                 head_metrics[f"{head}/{k}_at_{topk}"] = v 
+
         return head_metrics
+    
+    
